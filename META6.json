@@ -1,0 +1,20 @@
+{
+    "perl" : "6.c",
+    "name" : "Geo::Coordinates",
+    "api"  : "1",
+    "auth" : "github:kjpye",
+    "version" : "0.0.1",
+    "description" : "lasses and routines for geographic coordinates"
+    "authors" : [ "Kevin Pye" ],
+    "license" : "Artistic-2.0",
+    "provides" : {
+        "Geo::Coordinates" : "lib/Geo/Coordinates.rakumod"
+    },
+    "depends" : [ ],
+    "build-depends" : [ ],
+    "test-depends" : [ ],
+    "resources" : [ ],
+    "tags": [
+    ],
+    "source-url" : "git://github.com/kjpye/Raku-Geo-Coordinates"
+}
