@@ -1,27 +1,1256 @@
-class Point {
-  has $!x;
-  has $!y;
-  method new($x, $y) { self.bless(:$x, :$y) }
+# use Grammar::Debugger;
+
+enum WKBByteOrder (
+    wkbXDR => 0,
+    wkbNDR => 1,
+);
+
+enum WKBGeometryType (
+    wkbPoint              => 1,
+    wkbLineString         => 2,
+    wkbPolygon            => 3,
+    wkbMultiPoint         => 4,
+    wkbMultiLineString    => 5,
+    wkbMultiPolygon       => 6,
+    wkbGeometryCollection => 7,
+    wkbPolyhedralSurface  => 15,
+    wkbTIN                => 16,
+    wkbTriangle           => 17,
+
+    wkbPointZ              => 1001,
+    wkbLineStringZ         => 1002,
+    wkbPolygonZ            => 1003,
+    wkbMultiPointZ         => 1004,
+    wkbMultiLineStringZ    => 1005,
+    wkbMultiPolygonZ       => 1006,
+    wkbGeometryCollectionZ => 1007,
+    wkbPolyhedralSurfaceZ  => 1015,
+    wkbTINZ                => 1016,
+    wkbTriangleZ           => 1017,
+
+    wkbPointM              => 2001,
+    wkbLineStringM         => 2002,
+    wkbPolygonM            => 2003,
+    wkbMultiPointM         => 2004,
+    wkbMultiLineStringM    => 2005,
+    wkbMultiPolygonM       => 2006,
+    wkbGeometryCollectionM => 2007,
+    wkbPolyhedralSurfaceM  => 2015,
+    wkbTINM                => 2016,
+    wkbTriangleM           => 2017,
+
+    wkbPointZM              => 3001,
+    wkbLineStringZM         => 3002,
+    wkbPolygonZM            => 3003,
+    wkbMultiPointZM         => 3004,
+    wkbMultiLineStringZM    => 3005,
+    wkbMultiPolygonZM       => 3006,
+    wkbGeometryCollectionZM => 3007,
+    wkbPolyhedralSurfaceZM  => 3015,
+    wkbTINZM                => 3016,
+    wkbTriangleZM           => 3017,
+);
+
+class Geometry {
 }
 
-class PointZ {
-  has $!x;
-  has $!y;
-  has $!z;
-  method new($x, $y, $z) { self.bless(:$x, :$y, :$z) }
+class Point is Geometry {
+    has num $.x is required;
+    has num $.y is required;
+
+    method type { wkbPoint };
+    method new($x, $y) { self.bless(x => $x.Num, y => $y.Num) }
+    method Str() { "{$!x} {$!y}" }
+    method wkt() { "POINT({self.Str})"; }
+    method tobuf($endian) {
+        my $b = Buf.allocate(16);
+        $b.write-num64(0, $!x, $endian);
+        $b.write-num64(8, $!y, $endian);
+    }
+    method wkb(:$byteorder = wkbXDR) {
+        my $b = Buf.new($byteorder);
+        my $endian = $byteorder == wkbXDR ?? LittleEndian !! BigEndian;
+        $b.write-uint32(1, wkbPoint, $endian);
+        $b ~ self.tobuf($endian);
+    }
 }
 
-class PointM {
-  has $!x;
-  has $!y;
-  has $!m;
-  method new($x, $y, $m) { self.bless(:$x, :$y, :$m) }
+class PointZ is Geometry {
+    has num $.x is required;
+    has num $.y is required;
+    has num $.z is required;
+
+    method type { wkbPointZ }
+    method new($x, $y, $z) { self.bless(x => $x.Num, y => $y.Num, z => $z.Num) }
+    method Str() { "{$!x} {$!y} {$!z}" }
+    method wkt() { "POINTZ({self.Str})"; }
+    method tobuf($endian) {
+        my $b = Buf.allocate(24);
+        $b.write-num64(0,  $!x, $endian);
+        $b.write-num64(8,  $!y, $endian);
+        $b.write-num64(16, $!z, $endian);
+    }
+    method wkb(:$byteorder = wkbXDR) {
+        my $b = Buf.new($byteorder);
+        my $endian = $byteorder == wkbXDR ?? LittleEndian !! BigEndian;
+        $b.write-uint32(1, wkbPointZ, $endian);
+        $b ~ self.tobuf($endian);
+    }
 }
 
-class PointZM {
-  has $!x;
-  has $!y;
-  has $!z;
-  has $!m;
-  method new($x, $y, $z, $m) { self.bless(:$x, :$y, :$z, :$m) }
+class PointM is Geometry {
+    has $.x is required;
+    has $.y is required;
+    has $.m is required;
+    
+    method type { wkbPointM }
+    method new($x, $y, $m) { self.bless(:$x, :$y, :$m) }
+    method Str() { "{$!x} {$!y} {$!m}" }
+    method wkt() { "POINTM({self.Str})"; }
+    method tobuf($endian) {
+        my $b = Buf.allocate(24);
+        $b.write-num64(0,  $!x, $endian);
+        $b.write-num64(8,  $!y, $endian);
+        $b.write-num64(16, $!m, $endian);
+    }
+    method wkb(:$byteorder = wkbXDR) {
+        my $b = Buf.new($byteorder);
+        my $endian = $byteorder == wkbXDR ?? LittleEndian !! BigEndian;
+        $b.write-uint32(1, wkbPointM, $endian);
+        $b ~ self.tobuf($endian);
+    }
+}
+
+class PointZM is Geometry {
+    has $.x is required;
+    has $.y is required;
+    has $.z is required;
+    has $.m is required;
+    
+    method type { wkbPointZM }
+    method new($x, $y, $z, $m) { self.bless(:$x, :$y, :$z, :$m) }
+    method Str() { "{$!x} {$!y} {$!z} {$!m}" }
+    method wkt() { "POINTZM({self.Str})"; }
+    method tobuf($endian) {
+        my $b = Buf.allocate(32);
+        $b.write-num64(0,  $!x, $endian);
+        $b.write-num64(8,  $!y, $endian);
+        $b.write-num64(16, $!z, $endian);
+        $b.write-num64(24, $!m, $endian);
+    }
+    method wkb(:$byteorder = wkbXDR) {
+        my $b = Buf.new($byteorder);
+        my $endian = $byteorder == wkbXDR ?? LittleEndian !! BigEndian;
+        $b.write-uint32(1, wkbPointZM, $endian);
+        $b ~ self.tobuf($endian);
+    }
+}
+
+class LineString is Geometry {
+    has $!type = wkbLineString;
+    has $!num-points;
+    has Point @!points is required is built;
+
+    method type { $!type; }
+    method TWEAK { $!num-points = +@!points; }
+    method Str() { @!points.map({.Str}).join(',') };
+    method wkt() { "LINESTRING({self.Str})"; }
+    method tobuf($endian) {
+        my $b = Buf.allocate(4 + 16 × $!num-points);
+        $b.write-uint32(0, $!num-points);
+        my $offset = 4;
+        for @!points -> $point {
+            $b.write-num64($offset, $point.x, $endian); $offset += 8;
+            $b.write-num64($offset, $point.y, $endian); $offset += 8;
+        }
+        $b
+    }
+    method wkb(:$byteorder = wkbXDR) {
+        my $endian = $byteorder == wkbXDR ?? LittleEndian !! BigEndian;
+        my $b = Buf.new($byteorder);
+        $b.write-uint32(1, wkbLineString);
+        $b ~ self.tobuf($endian);
+    }
+}
+
+class LineStringZ is Geometry {
+    has $!type = wkbLineStringZ;
+    has $!num-points;
+    has PointZ @!points is required is built;
+
+    method type { $!type; }
+    method TWEAK { $!num-points = +@!points; }
+    method Str() { @!points.map({.Str}).join(',') };
+    method wkt() { "LINESTRINGZ({self.Str})"; }
+    method tobuf($endian) {
+        my $b = Buf.allocate(4 + 24 × $!num-points);
+        $b.write-uint32(0, $!num-points);
+        my $offset = 4;
+        for @!points -> $point {
+            $b.write-num64($offset, $point.x, $endian); $offset += 8;
+            $b.write-num64($offset, $point.y, $endian); $offset += 8;
+            $b.write-num64($offset, $point.z, $endian); $offset += 8;
+        }
+        $b
+    }
+    method wkb(:$byteorder = wkbXDR) {
+        my $endian = $byteorder == wkbXDR ?? LittleEndian !! BigEndian;
+        my $b = Buf.new($byteorder);
+        $b.write-uint32(1, wkbLineStringZ);
+        $b ~ self.tobuf($endian);
+    }
+}
+
+class LineStringM is Geometry {
+    has $!type = wkbLineStringM;
+    has $!num-points;
+    has PointM @!points is required is built;
+
+    method type { $!type; }
+    method TWEAK { $!num-points = +@!points; }
+    method Str() { @!points.map({.Str}).join(',') };
+    method wkt() { "LINESTRINGM({self.Str})"; }
+    method tobuf($endian) {
+        my $b = Buf.allocate(4 + 24 × $!num-points);
+        $b.write-uint32(0, $!num-points);
+        my $offset = 4;
+        for @!points -> $point {
+            $b.write-num64($offset, $point.x, $endian); $offset += 8;
+            $b.write-num64($offset, $point.y, $endian); $offset += 8;
+            $b.write-num64($offset, $point.m, $endian); $offset += 8;
+        }
+        $b
+    }
+    method wkb(:$byteorder = wkbXDR) {
+        my $endian = $byteorder == wkbXDR ?? LittleEndian !! BigEndian;
+        my $b = Buf.new($byteorder);
+        $b.write-uint32(1, wkbLineStringM);
+        $b ~ self.tobuf($endian);
+    }
+}
+
+class LineStringZM is Geometry {
+    has $!type = wkbLineStringZM;
+    has $!num-points;
+    has PointZM @!points is required is built;
+
+    method type { $!type; }
+    method TWEAK { $!num-points = +@!points; }
+    method Str() { @!points.map({.Str}).join(',') };
+    method wkt() { "LINESTRINGZM({self.Str})"; }
+    method tobuf($endian) {
+        my $b = Buf.allocate(4 + 32 × $!num-points);
+        $b.write-uint32(0, $!num-points);
+        my $offset = 4;
+        for @!points -> $point {
+            $b.write-num64($offset, $point.x, $endian); $offset += 8;
+            $b.write-num64($offset, $point.y, $endian); $offset += 8;
+            $b.write-num64($offset, $point.z, $endian); $offset += 8;
+            $b.write-num64($offset, $point.m, $endian); $offset += 8;
+        }
+        $b
+    }
+    method wkb(:$byteorder = wkbXDR) {
+        my $endian = $byteorder == wkbXDR ?? LittleEndian !! BigEndian;
+        my $b = Buf.new($byteorder);
+        $b.write-uint32(1, wkbLineStringZM);
+        $b ~ self.tobuf($endian);
+    }
+}
+
+class LinearRing is Geometry {
+    has $!num-points;
+    has Point @!points is required is built;
+
+# TWEAK should check that the linear ring is simple and closed
+    method TWEAK { $!num-points = +@!points ; }
+    method Str() { @!points.map({.Str}).join(',') };
+    method tobuf($endian) {
+        my $b = Buf.allocate(4 + 16 × $!num-points);
+        $b.write-int32(0, $!num-points, $endian);
+        my $offset = 4;
+        for @!points -> $point {
+            $b.write-num64($offset, $point.x.Num, $endian); $offset += 8;
+            $b.write-num64($offset, $point.y.Num, $endian); $offset += 8;
+        }
+        $b;
+    }
+}
+
+class LinearRingZ is Geometry {
+    has $!num-points;
+    has PointZ @!points is required is built;
+
+    method TWEAK { $!num-points = +@!points ; }
+    method Str() { @!points.map({.Str}).join(',') };
+    method tobuf($endian) {
+        my $b = Buf.new(0);
+        $b.reallocate(4 + 24 × $!num-points);
+        $b.write-int32(0, $!num-points, $endian);
+        my $offset = 4;
+        for @!points -> $point {
+            $b.write-num64($offset, $point.x.Num, $endian); $offset += 8;
+            $b.write-num64($offset, $point.y.Num, $endian); $offset += 8;
+            $b.write-num64($offset, $point.z.Num, $endian); $offset += 8;
+        }
+        $b;
+    }
+}
+
+class LinearRingM is Geometry {
+    has $!num-points;
+    has PointM @!points is required is built;
+
+    method TWEAK { $!num-points = +@!points ; }
+    method Str() { @!points.map({.Str}).join(',') };
+    method tobuf($endian) {
+        my $b = Buf.allocate(4 + 24 × $!num-points);
+        $b.write-int32(0, $!num-points, $endian);
+        my $offset = 4;
+        for @!points -> $point {
+            $b.write-num64($offset, $point.x.Num, $endian); $offset += 8;
+            $b.write-num64($offset, $point.y.Num, $endian); $offset += 8;
+            $b.write-num64($offset, $point.m.Num, $endian); $offset += 8;
+        }
+        $b;
+    }
+}
+
+class LinearRingZM is Geometry {
+    has $!num-points;
+    has PointZM @!points is required is built;
+
+    method TWEAK { $!num-points = +@!points ; }
+    method Str() { @!points.map({.Str}).join(',') };
+    method tobuf($endian) {
+        my $b = Buf.allocate(4 + 32 × $!num-points);
+        $b.write-int32(0, $!num-points, $endian);
+        my $offset = 4;
+        for @!points -> $point {
+            $b.write-num64($offset, $point.x.Num, $endian); $offset += 8;
+            $b.write-num64($offset, $point.y.Num, $endian); $offset += 8;
+            $b.write-num64($offset, $point.z.Num, $endian); $offset += 8;
+            $b.write-num64($offset, $point.m.Num, $endian); $offset += 8;
+        }
+        $b;
+    }
+}
+
+class Polygon is Geometry {
+    has $!type = wkbPolygon;
+    has $!num-rings;
+    has LinearRing @!rings is required is built;
+
+    method type { $!type; }
+    method TWEAK { $!num-rings = +@!rings; }
+    method Str() { '(' ~ @!rings.map({.Str}).join('),(') ~ ')' };
+    method wkt() { "POLYGON({self.Str})"; }
+    method wkb(:$byteorder = wkbXDR) {
+        my $endian = $byteorder == wkbXDR ?? LittleEndian !! BigEndian;
+        my $b = Buf.new($byteorder);
+        $b.write-uint32(1, wkbPolygon,  $endian);
+        $b.write-uint32(5, $!num-rings, $endian);
+        $b ~ [~] @!rings.map({.tobuf($endian)})
+    }
+}
+
+class PolygonZ is Geometry {
+    has $!type = wkbPolygonZ;
+    has $!num-rings;
+    has LinearRingZ @!rings is required is built;
+
+    method type { $!type; }
+    method TWEAK { $!num-rings = +@!rings; }
+    method Str() { '(' ~ @!rings.map({.Str}).join('),(') ~ ')' };
+    method wkt() { "POLYGONZ({self.Str})"; }
+    method wkb(:$byteorder = wkbXDR) {
+        my $endian = $byteorder == wkbXDR ?? LittleEndian !! BigEndian;
+        my $b = Buf.new($byteorder);
+        $b.write-uint32(1, wkbPolygonZ, $endian);
+        $b.write-uint32(5, $!num-rings, $endian);
+        $b ~ [~] @!rings.map({.tobuf($endian)})
+    }
+}
+
+class PolygonM is Geometry {
+    has $!type = wkbPolygonM;
+    has $!num-rings;
+    has LinearRingM @!rings is required is built;
+
+    method type { $!type; }
+    method TWEAK { $!num-rings = +@!rings; }
+    method Str() { '(' ~ @!rings.map({.Str}).join('),(') ~ ')' };
+    method wkt() { "POLYGONM({self.Str})"; }
+    method wkb(:$byteorder = wkbXDR) {
+        my $endian = $byteorder == wkbXDR ?? LittleEndian !! BigEndian;
+        my $b = Buf.new($byteorder);
+        $b.write-uint32(1, wkbPolygonM, $endian);
+        $b.write-uint32(5, $!num-rings, $endian);
+        $b ~ [~] @!rings.map({.tobuf($endian)})
+    }
+}
+
+class PolygonZM is Geometry {
+    has $!type = wkbPolygonZM;
+    has $!num-rings;
+    has LinearRingZM @!rings is required is built;
+
+    method type { $!type; }
+    method TWEAK { $!num-rings = +@!rings; }
+    method Str() { '(' ~ @!rings.map({.Str}).join('),(') ~ ')' };
+    method wkt() { "POLYGONZM({self.Str})"; }
+    method wkb(:$byteorder = wkbXDR) {
+        my $endian = $byteorder == wkbXDR ?? LittleEndian !! BigEndian;
+        my $b = Buf.new($byteorder);
+        $b.write-uint32(1, wkbPolygonZM, $endian);
+        $b.write-uint32(5, $!num-rings,  $endian);
+        $b ~ [~] @!rings.map({.tobuf($endian)})
+    }
+}
+
+class Triangle is Geometry {
+    has $!type = wkbTriangle;
+    has $!num-rings;
+    has LinearRing @!rings is required is built;
+
+    method type { $!type; }
+    method TWEAK { $!num-rings = +@!rings; }
+    method Str() { '(' ~ @!rings.map({.Str}).join('),(') ~ ')' };
+    method wkt() { "TRIANGLE({self.Str})"; }
+    method wkb(:$byteorder = wkbXDR) {
+        my $endian = $byteorder == wkbXDR ?? LittleEndian !! BigEndian;
+        my $b = Buf.new($byteorder);
+        $b.write-uint32(1, wkbTriangle, $endian);
+        $b.write-uint32(5, $!num-rings, $endian);
+        $b ~ [~] @!rings.map({.tobuf($endian)})
+    }
+}
+
+class TriangleZ is Geometry {
+    has $!type = wkbTriangleZ;
+    has $!num-rings;
+    has LinearRingZ @!rings is required is built;
+
+    method type { $!type; }
+    method TWEAK { $!num-rings = +@!rings; }
+    method Str() { '(' ~ @!rings.map({.Str}).join('),(') ~ ')' };
+    method wkt() { "TRIANGLEZ({self.Str})"; }
+    method wkb(:$byteorder = wkbXDR) {
+        my $endian = $byteorder == wkbXDR ?? LittleEndian !! BigEndian;
+        my $b = Buf.new($byteorder);
+        $b.write-uint32(1, wkbTriangleZ, $endian);
+        $b.write-uint32(5, $!num-rings,  $endian);
+        $b ~ [~] @!rings.map({.tobuf($endian)})
+    }
+}
+
+class TriangleM is Geometry {
+    has $!type = wkbTriangleM;
+    has $!num-rings;
+    has LinearRingM @!rings is required is built;
+
+    method type { $!type; }
+    method TWEAK { $!num-rings = +@!rings; }
+    method Str() { '(' ~ @!rings.map({.Str}).join('),(') ~ ')' };
+    method wkt() { "TRIANGLEM({self.Str})"; }
+    method wkb(:$byteorder = wkbXDR) {
+        my $endian = $byteorder == wkbXDR ?? LittleEndian !! BigEndian;
+        my $b = Buf.new($byteorder);
+        $b.write-uint32(1, wkbTriangleM, $endian);
+        $b.write-uint32(5, $!num-rings,  $endian);
+        $b ~ [~] @!rings.map({.tobuf($endian)})
+    }
+}
+
+class TriangleZM is Geometry {
+    has $!type = wkbTriangleZM;
+    has $!num-rings;
+    has LinearRingZM @!rings is required is built;
+
+    method type { $!type; }
+    method TWEAK { $!num-rings = +@!rings; }
+    method Str() { '(' ~ @!rings.map({.Str}).join('),(') ~ ')' };
+    method wkt() { "TRIANGLEZM({self.Str})"; }
+    method wkb(:$byteorder = wkbXDR) {
+        my $endian = $byteorder == wkbXDR ?? LittleEndian !! BigEndian;
+        my $b = Buf.new($byteorder);
+        $b.write-uint32(1, wkbTriangleZM, $endian);
+        $b.write-uint32(5, $!num-rings,  $endian);
+        $b ~ [~] @!rings.map({.tobuf($endian)})
+    }
+}
+
+class PolyhedralSurface is Geometry {
+    has $!type = wkbPolyhedralSurface;
+    has $!num-polygons;
+    has Polygon @!polygons is required is built;
+
+    method type { $!type; }
+    method TWEAK { $!num-polygons = +@!polygons; }
+    method Str() { '(' ~ @!polygons.map({.Str}).join('),(') ~ ')' };
+    method wkt() { "POLYHEDRALSURFACE({self.Str})"; }
+    method wkb(:$byteorder = wkbXDR) {
+        my $endian = $byteorder == wkbXDR ?? LittleEndian !! BigEndian;
+        my $b = Buf.new($byteorder);
+        $b.write-uint32(1, wkbPolyhedralSurface, $endian);
+        $b.write-uint32(5, $!num-polygons,       $endian);
+        $b ~ [~] @!polygons.map({.tobuf($endian)})
+    }
+}
+
+
+class PolyhedralSurfaceZ is Geometry {
+    has $!type = wkbPolyhedralSurfaceZ;
+    has $!num-polygons;
+    has PolygonZ @!polygons is required is built;
+
+    method type { $!type; }
+    method TWEAK { $!num-polygons = +@!polygons; }
+    method Str() { '(' ~ @!polygons.map({.Str}).join('),(') ~ ')' };
+    method wkt() { "POLYHEDRALSURFACEZ({self.Str})"; }
+    method wkb(:$byteorder = wkbXDR) {
+        my $endian = $byteorder == wkbXDR ?? LittleEndian !! BigEndian;
+        my $b = Buf.new($byteorder);
+        $b.write-uint32(1, wkbPolyhedralSurfaceZ, $endian);
+        $b.write-uint32(5, $!num-polygons,        $endian);
+        $b ~ [~] @!polygons.map({.tobuf($endian)})
+    }
+}
+
+
+class PolyhedralSurfaceM is Geometry {
+    has $!type = wkbPolyhedralSurfaceM;
+    has $!num-polygons;
+    has PolygonM @!polygons is required is built;
+
+    method type { $!type; }
+    method TWEAK { $!num-polygons = +@!polygons; }
+    method Str() { '(' ~ @!polygons.map({.Str}).join('),(') ~ ')' };
+    method wkt() { "POLYHEDRALSURFACEM({self.Str})"; }
+    method wkb(:$byteorder = wkbXDR) {
+        my $endian = $byteorder == wkbXDR ?? LittleEndian !! BigEndian;
+        my $b = Buf.new($byteorder);
+        $b.write-uint32(1, wkbPolyhedralSurfaceM, $endian);
+        $b.write-uint32(5, $!num-polygons,        $endian);
+        $b ~ [~] @!polygons.map({.tobuf($endian)})
+    }
+}
+
+
+class PolyhedralSurfaceZM is Geometry {
+    has $!type = wkbPolyhedralSurfaceZM;
+    has $!num-polygons;
+    has PolygonZM @!polygons is required is built;
+
+    method type { $!type; }
+    method TWEAK { $!num-polygons = +@!polygons; }
+    method Str() { '(' ~ @!polygons.map({.Str}).join('),(') ~ ')' };
+    method wkt() { "POLYHEDRALSURFACEZM({self.Str})"; }
+    method wkb(:$byteorder = wkbXDR) {
+        my $endian = $byteorder == wkbXDR ?? LittleEndian !! BigEndian;
+        my $b = Buf.new($byteorder);
+        $b.write-uint32(1, wkbPolyhedralSurfaceZM, $endian);
+        $b.write-uint32(5, $!num-polygons,         $endian);
+        $b ~ [~] @!polygons.map({.tobuf($endian)})
+    }
+}
+
+class TIN is Geometry {
+    has $!type = wkbTIN;
+    has $!num-polygons;
+    has Polygon @!polygons is required is built;
+
+    method type { $!type; }
+    method TWEAK { $!num-polygons = +@!polygons; }
+    method Str() { '(' ~ @!polygons.map({.Str}).join('),(') ~ ')' };
+    method wkt() { "TIN({self.Str})"; }
+    method wkb(:$byteorder = wkbXDR) {
+        my $endian = $byteorder == wkbXDR ?? LittleEndian !! BigEndian;
+        my $b = Buf.new($byteorder);
+        $b.write-uint32(1, wkbTIN,         $endian);
+        $b.write-uint32(5, $!num-polygons, $endian);
+        $b ~ [~] @!polygons.map({.tobuf($endian)})
+    }
+}
+
+
+class TINZ is Geometry {
+    has $!type = wkbTINZ;
+    has $!num-polygons;
+    has PolygonZ @!polygons is required is built;
+
+    method type { $!type; }
+    method TWEAK { $!num-polygons = +@!polygons; }
+    method Str() { '(' ~ @!polygons.map({.Str}).join('),(') ~ ')' };
+    method wkt() { "TINZ({self.Str})"; }
+    method wkb(:$byteorder = wkbXDR) {
+        my $endian = $byteorder == wkbXDR ?? LittleEndian !! BigEndian;
+        my $b = Buf.new($byteorder);
+        $b.write-uint32(1, wkbTINZ,        $endian);
+        $b.write-uint32(5, $!num-polygons, $endian);
+        $b ~ [~] @!polygons.map({.tobuf($endian)})
+    }
+}
+
+
+class TINM is Geometry {
+    has $!type = wkbTINM;
+    has $!num-polygons;
+    has PolygonM @!polygons is required is built;
+
+    method type { $!type; }
+    method TWEAK { $!num-polygons = +@!polygons; }
+    method Str() { '(' ~ @!polygons.map({.Str}).join('),(') ~ ')' };
+    method wkt() { "TINM({self.Str})"; }
+    method wkb(:$byteorder = wkbXDR) {
+        my $endian = $byteorder == wkbXDR ?? LittleEndian !! BigEndian;
+        my $b = Buf.new($byteorder);
+        $b.write-uint32(1, wkbTINM,        $endian);
+        $b.write-uint32(5, $!num-polygons, $endian);
+        $b ~ [~] @!polygons.map({.tobuf($endian)})
+    }
+}
+
+
+class TINZM is Geometry {
+    has $!type = wkbTINZM;
+    has $!num-polygons;
+    has PolygonZM @!polygons is required is built;
+
+    method type { $!type; }
+    method TWEAK { $!num-polygons = +@!polygons; }
+    method Str() { '(' ~ @!polygons.map({.Str}).join('),(') ~ ')' };
+    method wkt() { "TINZM({self.Str})"; }
+    method wkb(:$byteorder = wkbXDR) {
+        my $endian = $byteorder == wkbXDR ?? LittleEndian !! BigEndian;
+        my $b = Buf.new($byteorder);
+        $b.write-uint32(1, wkbTINZM,       $endian);
+        $b.write-uint32(5, $!num-polygons, $endian);
+        $b ~ [~] @!polygons.map({.tobuf($endian)})
+    }
+}
+
+class MultiPoint is Geometry {
+    has $!type = wkbMultiPoint;
+    has $!num-points;
+    has Point @!points is required is built;
+
+    method type { $!type; }
+    method TWEAK { $!num-points = +@!points; }
+    method Str() { '(' ~ @!points.map({.Str}).join('),(') ~ ')' };
+    method wkt() { "MULTIPOINT({self.Str})"; }
+    method wkb(:$byteorder = wkbXDR) {
+        my $endian = $byteorder == wkbXDR ?? LittleEndian !! BigEndian;
+        my $b = Buf.new($byteorder);
+        $b.reallocate(9 + 16 × $!num-points);
+        $b.write-uint32(1, wkbMultiPoint, $endian);
+        $b.write-uint32(5, $!num-points,  $endian);
+        my $offset = 9;
+        for @!points -> $point {
+            $b.write-num64($offset, $point.x, $endian); $offset += 8;
+            $b.write-num64($offset, $point.y, $endian); $offset += 8;
+        }
+        $b
+    }
+}
+
+
+    
+class MultiPointZ is Geometry {
+    has $!type = wkbMultiPointZ;
+    has $!num-points;
+    has PointZ @!points is required is built;
+
+    method type { $!type; }
+    method TWEAK { $!num-points = +@!points; }
+    method Str() { @!points.map({.Str}).join(',') };
+    method wkt() { "MULTIPOINTZ({self.Str})"; }
+    method wkb(:$byteorder = wkbXDR) {
+        my $endian = $byteorder == wkbXDR ?? LittleEndian !! BigEndian;
+        my $b = Buf.new($byteorder);
+        $b.reallocate(9 + 16 × $!num-points);
+        $b.write-uint32(1, wkbMultiPointZ, $endian);
+        $b.write-uint32(5, $!num-points,   $endian);
+        my $offset = 9;
+        for @!points -> $point {
+            $b.write-num64($offset, $point.x, $endian); $offset += 8;
+            $b.write-num64($offset, $point.y, $endian); $offset += 8;
+        }
+        $b
+    }
+}
+    
+class MultiPointM is Geometry {
+    has $!type = wkbMultiPointM;
+    has $!num-points;
+    has PointM @!points is required is built;
+
+    method type { $!type; }
+    method TWEAK { $!num-points = +@!points; }
+    method Str() { @!points.map({.Str}).join(',') };
+    method wkt() { "MULTIPOINTM({self.Str})"; }
+    method wkb(:$byteorder = wkbXDR) {
+        my $endian = $byteorder == wkbXDR ?? LittleEndian !! BigEndian;
+        my $b = Buf.new($byteorder);
+        $b.reallocate(9 + 16 × $!num-points);
+        $b.write-uint32(1, wkbMultiPointM, $endian);
+        $b.write-uint32(5, $!num-points,   $endian);
+        my $offset = 9;
+        for @!points -> $point {
+            $b.write-num64($offset, $point.x, $endian); $offset += 8;
+            $b.write-num64($offset, $point.y, $endian); $offset += 8;
+        }
+        $b
+    }
+}
+    
+class MultiPointZM is Geometry {
+    has $!type = wkbMultiPointZM;
+    has $!num-points;
+    has PointZM @!points is required is built;
+
+    method type { $!type; }
+    method TWEAK { $!num-points = +@!points; }
+    method Str() { @!points.map({.Str}).join(',') };
+    method wkt() { "MULTIPOINTZM({self.Str})"; }
+    method wkb(:$byteorder = wkbXDR) {
+        my $endian = $byteorder == wkbXDR ?? LittleEndian !! BigEndian;
+        my $b = Buf.new($byteorder);
+        $b.reallocate(9 + 16 × $!num-points);
+        $b.write-uint32(1, wkbMultiPointZM, $endian);
+        $b.write-uint32(5, $!num-points,    $endian);
+        my $offset = 9;
+        for @!points -> $point {
+            $b.write-num64($offset, $point.x, $endian); $offset += 8;
+            $b.write-num64($offset, $point.y, $endian); $offset += 8;
+        }
+        $b;
+    }
+}
+
+class MultiLineString is Geometry {
+    has $!type = wkbMultiLineString;
+    has $!num-linestrings;
+    has LineString @!linestrings is required is built;
+
+    method type { $!type; }
+    method TWEAK { $!num-linestrings = +@!linestrings; }
+    method Str { '(' ~ @!linestrings.map({.Str}).join('),(') ~ ')'; }
+    method wkt { 'MultiLineString(' ~ self.Str ~ ')'; }
+    method tobuf($endian) {
+        my $b = Buf.new(0);
+        $b.write-uint32(0, $!num-linestrings, $endian);
+        $b ~ [~] @!linestrings.map({.tobuf($endian)});
+    }
+    method wkb($byteorder) {
+        my $endian = $byteorder == wkbXDR ?? LittleEndian !! BigEndian;
+        my $b = Buf.new($byteorder);
+        $b.write-int32(1, wkbMultiLineString, $endian);
+        $b.write-int32(5, $!num-linestrings,  $endian);
+        $b ~ self.tobuf($endian);
+    }
+}
+
+class MultiLineStringZ is Geometry {
+    has $!type = wkbMultiLineStringZ;
+    has $!num-linestrings;
+    has LineStringZ @!linestrings is required is built;
+
+    method type { $!type; }
+    method TWEAK { $!num-linestrings = +@!linestrings; }
+    method tobuf($endian) {
+        my $b = Buf.new(0);
+        $b.write-uint32(0, $!num-linestrings, $endian);
+        $b ~ [~] @!linestrings.map({.tobuf($endian)});
+    }
+    method wkb($byteorder) {
+        my $endian = $byteorder == wkbXDR ?? LittleEndian !! BigEndian;
+        my $b = Buf.new($byteorder);
+        $b.write-int32(1, wkbMultiLineStringZ, $endian);
+        $b.write-int32(5, $!num-linestrings,   $endian);
+        $b ~ self.tobuf($endian);
+    }
+}
+
+class MultiLineStringM is Geometry {
+    has $!type = wkbMultiLineStringM;
+    has $!num-linestrings;
+    has LineStringM @!linestrings is required is built;
+
+    method type { $!type; }
+    method TWEAK { $!num-linestrings = +@!linestrings; }
+    method tobuf($endian) {
+        my $b = Buf.new(0);
+        $b.write-uint32(0, $!num-linestrings, $endian);
+        $b ~ [~] @!linestrings.map({.tobuf($endian)});
+    }
+    method wkb($byteorder) {
+        my $endian = $byteorder == wkbXDR ?? LittleEndian !! BigEndian;
+        my $b = Buf.new($byteorder);
+        $b.write-int32(1, wkbMultiLineStringM, $endian);
+        $b.write-int32(5, $!num-linestrings,   $endian);
+        $b ~ self.tobuf($endian);
+    }
+}
+
+class MultiLineStringZM is Geometry {
+    has $!type = wkbMultiLineStringZM;
+    has $!num-linestrings;
+    has LineStringZM @!linestrings is required is built;
+
+    method type { $!type; }
+    method TWEAK { $!num-linestrings = +@!linestrings; }
+    method tobuf($endian) {
+        my $b = Buf.new(0);
+        $b.write-uint32(0, $!num-linestrings, $endian);
+        $b ~ [~] @!linestrings.map({.tobuf($endian)});
+    }
+    method wkb($byteorder) {
+        my $endian = $byteorder == wkbXDR ?? LittleEndian !! BigEndian;
+        my $b = Buf.new($byteorder);
+        $b.write-int32(1, wkbMultiLineStringZM, $endian);
+        $b.write-int32(5, $!num-linestrings, $endian);
+        $b ~ self.tobuf($endian);
+    }
+}
+
+class MultiPolygon is Geometry {
+    has $!type = wkbMultiPolygon;
+    has $!num-polygons;
+    has Polygon @!polygons is required is built;
+
+    method type { $!type; }
+    method TWEAK { $!num-polygons = +@!polygons; }
+    method Str   { '(' ~ @!polygons.map({.Str}).join('),(') ~ ')'; }
+    method wkt   { 'MultiPolygon(' ~ self.Str ~ ')'; }
+    method tobuf($endian) {
+        my $b = Buf.new(0);
+        $b.write-uint32(0, $!num-polygons, $endian);
+        $b ~ [~] @!polygons.map({.tobuf($endian)});
+    }
+    method wkb($byteorder) {
+        my $endian = $byteorder == wkbXDR ?? LittleEndian !! BigEndian;
+        my $b = Buf.new($byteorder);
+        $b.write-int32(1, wkbPolygon,     $endian);
+        $b.write-int32(5, $!num-polygons, $endian);
+        $b ~ self.tobuf($endian);
+    }
+}
+
+class MultiPolygonZ is Geometry {
+    has $!type = wkbMultiPolygonZ;
+    has $!num-polygons;
+    has PolygonZ @!polygons is required is built;
+
+    method type { $!type; }
+    method TWEAK { $!num-polygons = +@!polygons; }
+    method tobuf($endian) {
+        my $b = Buf.new(0);
+        $b.write-uint32(0, $!num-polygons, $endian);
+        $b ~ [~] @!polygons.map({.tobuf($endian)});
+    }
+    method wkb($byteorder) {
+        my $endian = $byteorder == wkbXDR ?? LittleEndian !! BigEndian;
+        my $b = Buf.new($byteorder);
+        $b.write-int32(1, wkbPolygonZ, $endian);
+        $b.write-int32(5, $!num-polygons, $endian);
+        $b ~ self.tobuf($endian);
+    }
+}
+
+class MultiPolygonM is Geometry {
+    has $!type = wkbMultiPolygonM;
+    has $!num-polygons;
+    has PolygonM @!polygons is required is built;
+
+    method type { $!type; }
+    method TWEAK { $!num-polygons = +@!polygons; }
+    method tobuf($endian) {
+        my $b = Buf.new(0);
+        $b.write-uint32(0, $!num-polygons, $endian);
+        $b ~ [~] @!polygons.map({.tobuf($endian)});
+    }
+    method wkb($byteorder) {
+        my $endian = $byteorder == wkbXDR ?? LittleEndian !! BigEndian;
+        my $b = Buf.new($byteorder);
+        $b.write-int32(1, wkbPolygonM, $endian);
+        $b.write-int32(5, $!num-polygons, $endian);
+        $b ~ self.tobuf($endian);
+    }
+}
+
+class MultiPolygonZM is Geometry {
+    has $!type = wkbMultiPolygonZM;
+    has $!num-polygons;
+    has PolygonZM @!polygons is required is built;
+
+    method type { $!type; }
+    method TWEAK { $!num-polygons = +@!polygons; }
+    method tobuf($endian) {
+        my $b = Buf.new(0);
+        $b.write-uint32(0, $!num-polygons, $endian);
+        $b ~ [~] @!polygons.map({.tobuf($endian)});
+    }
+    method wkb($byteorder) {
+        my $endian = $byteorder == wkbXDR ?? LittleEndian !! BigEndian;
+        my $b = Buf.new($byteorder);
+        $b.write-int32(1, wkbPolygonZM, $endian);
+        $b.write-int32(5, $!num-polygons, $endian);
+        $b ~ self.tobuf($endian);
+    }
+}
+
+class GeometryCollection is Geometry {
+    has $!num-geometries;
+    has Geometry @!geometries is required is built;
+
+    method TWEAK { $!num-geometries = +@!geometries; }
+    method Str { @!geometries.map({.wkt}).join(','); }
+    method wkt { 'GeeometryCollection(' ~ self.Str ~ ')'; }
+    method tobuf($endian) {
+        my $b = Buf.new(0);
+        $b.write-uint32(0, $!num-geometries, $endian);
+        $b ~ [~] @!geometries.map({.tobuf($endian)});
+    }
+    method wkb($byteorder) {
+        my $endian = $byteorder == wkbXDR ?? LittleEndian !! BigEndian;
+        my $b = Buf.new($byteorder);
+        $b.write-int32(1, wkbGeometryCollection, $endian);
+        $b ~ self.tobuf($endian);
+    }
+}
+
+class GeometryCollectionZ is Geometry {
+    has $!num-geometries;
+    has Geometry @!geometries is required is built;
+
+    method TWEAK { $!num-geometries = +@!geometries; }
+    method Str { @!geometries.map({.wkt}).join(','); }
+    method wkt { 'GeeometryCollectionZ(' ~ self.Str ~ ')'; }
+    method tobuf($endian) {
+        my $b = Buf.new(0);
+        $b.write-uint32(0, $!num-geometries, $endian);
+        $b ~ [~] @!geometries.map({.tobuf($endian)});
+    }
+    method wkb($byteorder) {
+        my $endian = $byteorder == wkbXDR ?? LittleEndian !! BigEndian;
+        my $b = Buf.new($byteorder);
+        $b.write-int32(1, wkbGeometryCollectionZ, $endian);
+        $b ~ self.tobuf($endian);
+    }
+}
+
+class GeometryCollectionM is Geometry {
+    has $!num-geometries;
+    has Geometry @!geometries is required is built;
+
+    method TWEAK { $!num-geometries = +@!geometries; }
+    method Str { @!geometries.map({.wkt}).join(','); }
+    method wkt { 'GeeometryCollectionM(' ~ self.Str ~ ')'; }
+    method tobuf($endian) {
+        my $b = Buf.new(0);
+        $b.write-uint32(0, $!num-geometries, $endian);
+        $b ~ [~] @!geometries.map({.tobuf($endian)});
+    }
+    method wkb($byteorder) {
+        my $endian = $byteorder == wkbXDR ?? LittleEndian !! BigEndian;
+        my $b = Buf.new($byteorder);
+        $b.write-int32(1, wkbGeometryCollectionM, $endian);
+        $b ~ self.tobuf($endian);
+    }
+}
+
+class GeometryCollectionZM is Geometry {
+    has $!num-geometries;
+    has Geometry @!geometries is required is built;
+
+    method TWEAK { $!num-geometries = +@!geometries; }
+    method Str { @!geometries.map({.wkt}).join(','); }
+    method wkt { 'GeeometryCollectionZM(' ~ self.Str ~ ')'; }
+    method tobuf($endian) {
+        my $b = Buf.new(0);
+        $b.write-uint32(0, $!num-geometries, $endian);
+        $b ~ [~] @!geometries.map({.tobuf($endian)});
+    }
+    method wkb($byteorder) {
+        my $endian = $byteorder == wkbXDR ?? LittleEndian !! BigEndian;
+        my $b = Buf.new($byteorder);
+        $b.write-int32(1, wkbGeometryCollectionZM, $endian);
+        $b ~ self.tobuf($endian);
+    }
+}
+
+grammar WKT {
+    regex TOP {
+        | <geometry-tagged-text>   { make $<geometry-tagged-text>.made;   }
+        | <geometryz-tagged-text>  { make $<geometryz-tagged-text>.made;  }
+        | <geometrym-tagged-text>  { make $<geometrym-tagged-text>.made;  }
+        | <geometryzm-tagged-text> { make $<geometryzm-tagged-text>.made; }
+    }
+    regex value                          { <signed-numeric-literal> { make $<signed-numeric-literal>.made; } }
+    token quoted-name                    { '"' <name> '"' }
+    token name                           { <letter>* }
+    token letter                         { <[a..z A..Z]> | \d | <[\(\)\-\_\.\'\ ]> }
+    token sign                           {       { make  1; }
+                                           | '+' { make  1; }
+                                           | '-' { make -1; }
+                                         }
+    regex signed-numeric-literal         { <sign> <unsigned-numeric-literal> { make $<sign>.made * $<unsigned-numeric-literal>.made; } }
+    regex unsigned-numeric-literal       {
+                                           | <exact-numeric-literal>       { make $<exact-numeric-literal>.made;       }
+                                           | <approximate-numeric-literal> { make $<approximate-numeric-literal>.made; }
+                                         }
+    regex approximate-numeric-literal    { :i <exact-numeric-literal> 'e' <sign> <unsigned-integer>
+                                              { make $<exact-numeric-literal>.made * 10e0 ** ($<sign> * $<unsigned-integer>.made); }
+                                         }
+    regex exact-numeric-literal          {
+                                           | <unsigned-integer> [ <decimal-point> <unsigned-integer>? ]?
+                                             {
+                                                 if $<unsigned-integer>[1].defined {
+                                                     make $<unsigned-integer>[0] +
+                                                     $<unsigned-integer>[1] / 10 ** ($<unsigned-integer>[1].pos - $<unsigned-integer>[1].from);
+                                                 } else {
+                                                     make $<unsigned-integer>[0];
+                                                 }
+                                             }
+                                           | <decimal-point> <unsigned-integer> { make 1e0/10**($<unsigned-integer>.pos - $<unsigned-integer>.from); }
+                                         }
+    token signed-integer                 { <sign> <unsigned-integer> { make $<sign>.made * $<unsigned-integer>.made; } }
+    token unsigned-integer               { (\d+) { make +$0; } }
+#    token decimal-point                  { '.' | ',' }
+    token decimal-point                  { '.' }
+    token empty-set                      { "EMPTY" }
+
+    rule point { <value> <value> { make Point.new($<value>[0], $<value>[1]); } }
+    rule geometry-tagged-text {
+                                  | <point-tagged-text>              { make $<point-tagged-text>.made;              }
+                                  | <linestring-tagged-text>         { make $<linestring-tagged-text>.made;         }
+                                  | <polygon-tagged-text>            { make $<polygon-tagged-text>.made;            }
+                                  | <triangle-tagged-text>           { make $<triangle-tagged-text>.made;           }
+                                  | <polyhedralsurface-tagged-text>  { make $<polyhedralsurface-tagged-text>.made;  }
+                                  | <tin-tagged-text>                { make $<tin-tagged-text>.made;                }
+                                  | <multipoint-tagged-text>         { make $<multipoint-tagged-text>.made;         }
+                                  | <multilinestring-tagged-text>    { make $<multilinestring-tagged-text>.made;    }
+                                  | <multipolygon-tagged-text>       { make $<multipolygon-tagged-text>.made;       }
+                                  | <geometrycollection-tagged-text> { make $<geometrycollection-tagged-text>.made; }
+    }
+    rule point-tagged-text              { :i "point"              <point-text>              { make $<point-text>.made;              } }
+    rule linestring-tagged-text         { :i "linestring"         <linestring-text>         { make $<linestring-text>.made;         } }
+    rule polygon-tagged-text            { :i "polygon"            <polygon-text>            { make $<polygon-text>.made;            } }
+    rule triangle-tagged-text           { :i "triangle"           <triangle-text>           { make $<triangle-text>.made;           } }
+    rule polyhedralsurface-tagged-text  { :i "polyhedralsurface"  <polyhedralsurface-text>  { make $<polyhedralsurface-text>.made;  } }
+    rule tin-tagged-text                { :i "tin"                <tin-text>                { make $<tin-text>.made;                } }
+    rule multipoint-tagged-text         { :i "multipoint"         <multipoint-text>         { make $<multipoint-text>.made;         } }
+    rule multilinestring-tagged-text    { :i "multilinestring"    <multilinestring-text>    { make $<multilinestring-text>.made;    } }
+    rule multipolygon-tagged-text       { :i "multipolygon"       <multipolygon-text>       { make $<multipolygon-text>.made;       } }
+    rule geometrycollection-tagged-text { :i "geometrycollection" <geometrycollection-text> { make $<geometrycollection-text>.made; } }
+
+    rule point-text { <empty-set>
+                    |  '(' <point> ')' { make $<point>.made; }
+                    |  '[' <point> ']' { make $<point>.made; }
+                    }
+    rule linestring-text {:s
+                           | <empty-set>
+                           | '(' <point>+ % ',' ')' { make LineString.new(points => $<point>.map: {.made}); }
+                           | '[' <point>+ % ',' ']' { make LineString.new(points => $<point>.map: {.made}); }
+                         }
+    rule linearring-text { | <empty-set>
+                           | '(' <point>+ % ',' ')' { make LinearRing.new(points => $<point>.map: {.made}); }
+                           | '[' <point>+ % ',' ']' { make LinearRing.new(points => $<point>.map: {.made}); }
+                         }
+    rule polygon-text { | <empty-set>
+                        | '(' <linearring-text>+ % ',' ')' { make Polygon.new(rings => $<linearring-text>.map: {.made}); }
+                        | '[' <linearring-text>+ % ',' ']' { make Polygon.new(rings => $<linearring-text>.map: {.made}); }
+                      }
+    rule polyhedralsurface-text { | <empty-set>
+                                  | '(' <polygon-text>+ % ',' ')' { make PolyhedralSurface.New(polygons => $<polygon-text>.map: {.made}); }
+                                  | '[' <polygon-text>+ % ',' ']' { make PolyhedralSurface.New(polygons => $<polygon-text>.map: {.made}); }
+                                }
+    rule multipoint-text { | <empty-set>
+                           | '(' <point-text>+ % ',' ')' { make MultiPoint.new(points => $<point-text>.map: {.made}); }
+                           | '[' <point-text>+ % ',' ']' { make MultiPoint.new(points => $<point-text>.map: {.made}); }
+                         }
+    rule multilinestring-text { | <empty-set>
+                                | '(' <linestring-text>+ % ',' ')' { make MultiLineString.new(linestrings => $<linestring-text>.map: {.made}); }
+                                | '[' <linestring-text>+ % ',' ']' { make MultiLineString.new(linestrings => $<linestring-text>.map: {.made}); }
+                              }
+    rule multipolygon-text { | <empty-set>
+                             | '(' <polygon-text>+ % ',' ')' { make MultiPolygon.new(polygons => $<polygon-text>.map: {.made}); }
+                             | '[' <polygon-text>+ % ',' ']' { make MultiPolygon.new(polygons => $<polygon-text>.map: {.made}); }
+                           }
+    rule geometrycollection-text { | <empty-set>
+                                   | '(' <geometry-tagged-text>+ % ',' ')' { make GeometryCollection.new(geometries => $<geometry-tagged-text>.map: {.made}); }
+                                   | '[' <geometry-tagged-text>+ % ',' ']' { make GeometryCollection.new(geometries => $<geometry-tagged-text>.map: {.made}); }
+                                 }
+
+    rule pointz { <value> <value> <value> }
+    rule geometryz-tagged-text {
+        | <pointz-tagged-text>
+        | <linestringz-tagged-text>
+        | <polygonz-tagged-text>
+        | <trianglez-tagged-text>
+        | <polyhedralsurfacez-tagged-text>
+        | <tinz-tagged-text>
+        | <multipointz-tagged-text>
+        | <multilinestringz-tagged-text>
+        | <multipolygonz-tagged-text>
+        | <geometrycollectionz-tagged-text>
+    }
+    rule pointz-tagged-text              { :i "point" "z"              <pointz-text> }
+    rule linestringz-tagged-text         { :i "linestring" "z"         <linestringz-text> }
+    rule polygonz-tagged-text            { :i "polygon" "z"            <polygonz-text> }
+    rule trianglez-tagged-text           { :i "triangle" "z"           <trianglez-text> }
+    rule polyhedralsurfacez-tagged-text  { :i "polyhedralsurface" "z"  <polyhedralsurfacez-text> }
+    rule tinz-tagged-text                { :i "tin" "z"                <tinz-text> }
+    rule multipointz-tagged-text         { :i "multipoint" "z"         <multipointz-text> }
+    rule multilinestringz-tagged-text    { :i "multilinestring" "z"    <multilinestringz-text> }
+    rule multipolygonz-tagged-text       { :i "multipolygon" "z"       <multipolygonz-text> }
+    rule geometrycollectionz-tagged-text { :i "geometrycollection" "z" <geometrycollectionz-text> }
+
+    rule pointz-text { <empty-set> |
+                      '(' <pointz> ')' |
+                      '[' <pointz> ']'
+                    }
+    rule linestringz-text { | <empty-set>
+                           | '(' <pointz>+ % ',' ')'
+                           | '[' <pointz>+ % ',' ']'
+                         }
+    rule polygon-textz { | <empty-set>
+                        | '(' <linestringz-text>+ % ',' ')'
+                        | '[' <linestringz-text>+ % ',' ']'
+                      }
+    rule polyhedralsurfacez-text { | <empty-set>
+                                  | '(' <polygonz-text>+ % ',' ')'
+                                  | '[' <polygonz-text>+ % ',' ']'
+                                }
+    rule multipointz-text { | <empty-set>
+                           | '(' <pointz-text>+ % ',' ')'
+                           | '[' <pointz-text>+ % ',' ']'
+                         }
+    rule multilinestringz-text { | <empty-set>
+                                | '(' <multilinestringz-text>+ % ',' ')'
+                                | '[' <multilinestringz-text>+ % ',' ']'
+                              }
+    rule multipolygonz-text { | <empty-set>
+                             | '(' <multipolygonz-text>+ % ',' ')'
+                             | '[' <multipolygonz-text>+ % ',' ']'
+                           }
+    rule geometrycollectionz-text { | <empty-set>
+                                   | '(' <geometry-taggedz-text>+ % ',' ')'
+                                   | '[' <geometry-taggedz-text>+ % ',' ']'
+                                 }
+
+    rule pointm { <value> <value> <value> }
+    rule geometrym-tagged-text {
+        | <pointz-tagged-text>
+        | <linestringm-tagged-text>
+        | <polygonm-tagged-text>
+        | <trianglem-tagged-text>
+        | <polyhedralsurfacem-tagged-text>
+        | <tinm-tagged-text>
+        | <multipointm-tagged-text>
+        | <multilinestringm-tagged-text>
+        | <multipolygonm-tagged-text>
+        | <geometrycollectionm-tagged-text>
+    }
+    rule pointm-tagged-text              { :i "point" "m"              <pointm-text> }
+    rule linestringm-tagged-text         { :i "linestring" "m"         <linestringm-text> }
+    rule polygonm-tagged-text            { :i "polygon" "m"            <polygonm-text> }
+    rule trianglem-tagged-text           { :i "triangle" "m"           <trianglem-text> }
+    rule polyhedralsurfacem-tagged-text  { :i "polyhedralsurface" "m"  <polyhedralsurfacem-text> }
+    rule tinm-tagged-text                { :i "tin" "m"                <tinm-text> }
+    rule multipointm-tagged-text         { :i "multipoint" "m"         <multipointm-text> }
+    rule multilinestringm-tagged-text    { :i "multilinestring" "m"    <multilinestringm-text> }
+    rule multipolygonm-tagged-text       { :i "multipolygon" "m"       <multipolygonm-text> }
+    rule geometrycollectionm-tagged-text { :i "geometrycollection" "m" <geometrycollectionm-text> }
+
+    rule pointm-text { <empty-set> |
+                      '(' <pointm> ')' |
+                      '[' <pointm> ']'
+                    }
+    rule linestringm-text { | <empty-set>
+                           | '(' <pointm>+ % ',' ')'
+                           | '[' <pointm>+ % ',' ']'
+                         }
+    rule polygon-textm { | <empty-set>
+                        | '(' <linestringm-text>+ % ',' ')'
+                        | '[' <linestringm-text>+ % ',' ']'
+                      }
+    rule polyhedralsurfacem-text { | <empty-set>
+                                  | '(' <polygonm-text>+ % ',' ')'
+                                  | '[' <polygonm-text>+ % ',' ']'
+                                }
+    rule multipointm-text { | <empty-set>
+                           | '(' <pointm-text>+ % ',' ')'
+                           | '[' <pointm-text>+ % ',' ']'
+                         }
+    rule multilinestringm-text { | <empty-set>
+                                | '(' <multilinestringm-text>+ % ',' ')'
+                                | '[' <multilinestringm-text>+ % ',' ']'
+                              }
+    rule multipolygonm-text { | <empty-set>
+                             | '(' <multipolygonm-text>+ % ',' ')'
+                             | '[' <multipolygonm-text>+ % ',' ']'
+                           }
+    rule geometrycollectionm-text { | <empty-set>
+                                   | '(' <geometry-taggedm-text>+ % ',' ')'
+                                   | '[' <geometry-taggedm-text>+ % ',' ']'
+                                 }
+
+    rule pointzm { <value> <value> <value> <value>}
+    rule geometryzm-tagged-text {
+        | <pointzm-tagged-text>
+        | <linestringzm-tagged-text>
+        | <polygonzm-tagged-text>
+        | <trianglezm-tagged-text>
+        | <polyhedralsurfacezm-tagged-text>
+        | <tinzm-tagged-text>
+        | <multipointzm-tagged-text>
+        | <multilinestringzm-tagged-text>
+        | <multipolygonzm-tagged-text>
+        | <geometrycollectionzm-tagged-text>
+    }
+    rule pointzm-tagged-text              { :i "point" "zm"              <pointzm-text> }
+    rule linestringzm-tagged-text         { :i "linestring" "zm"         <linestringzm-text> }
+    rule polygonzm-tagged-text            { :i "polygon" "zm"            <polygonzm-text> }
+    rule trianglezm-tagged-text           { :i "triangle" "zm"           <trianglezm-text> }
+    rule polyhedralsurfacezm-tagged-text  { :i "polyhedralsurface" "zm"  <polyhedralsurfacezm-text> }
+    rule tinzm-tagged-text                { :i "tin" "zm"                <tinzm-text> }
+    rule multipointzm-tagged-text         { :i "multipoint" "zm"         <multipointzm-text> }
+    rule multilinestringzm-tagged-text    { :i "multilinestring" "zm"    <multilinestringzm-text> }
+    rule multipolygonzm-tagged-text       { :i "multipolygon" "zm"       <multipolygonzm-text> }
+    rule geometrycollectionzm-tagged-text { :i "geometrycollection" "zm" <geometrycollectionzm-text> }
+
+    rule pointzm-text { <empty-set> |
+                      '(' <pointzm> ')' |
+                      '[' <pointzm> ']'
+                    }
+    rule linestringzm-text { | <empty-set>
+                           | '(' <pointzm>+ % ',' ')'
+                           | '[' <pointzm>+ % ',' ']'
+                         }
+    rule polygon-textzm { | <empty-set>
+                        | '(' <linestringzm-text>+ % ',' ')'
+                        | '[' <linestringzm-text>+ % ',' ']'
+                      }
+    rule polyhedralsurfacezm-text { | <empty-set>
+                                  | '(' <polygonzm-text>+ % ',' ')'
+                                  | '[' <polygonzm-text>+ % ',' ']'
+                                }
+    rule multipointzm-text { | <empty-set>
+                           | '(' <pointzm-text>+ % ',' ')'
+                           | '[' <pointzm-text>+ % ',' ']'
+                         }
+    rule multilinestringzm-text { | <empty-set>
+                                | '(' <multilinestringzm-text>+ % ',' ')'
+                                | '[' <multilinestringzm-text>+ % ',' ']'
+                              }
+    rule multipolygonzm-text { | <empty-set>
+                             | '(' <multipolygonzm-text>+ % ',' ')'
+                             | '[' <multipolygonzm-text>+ % ',' ']'
+                           }
+    rule geometrycollectionzm-text { | <empty-set>
+                                   | '(' <geometry-taggedzm-text>+ % ',' ')'
+                                   | '[' <geometry-taggedzm-text>+ % ',' ']'
+                                 }
 }
