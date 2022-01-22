@@ -1434,6 +1434,10 @@ sub wkb-get-trianglezm($buff, $offset is rw, $endian) {
 sub wkb-read-geometry($buff, $offset is rw, $endian) {
     my $geometry;
     my $geometry-type = $buff.read-uint32($offset, $endian); $offset += 4;
+    if $geometry-type +& 0x20000000 {
+        $offset += 4; # skip SRID
+        $geometry-type +^= 0x20000000;
+    }
     given $geometry-type {
         when wkbPoint {
             $geometry = wkb-get-point($buff, $offset, $endian);

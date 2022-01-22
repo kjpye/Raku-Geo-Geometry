@@ -1,7 +1,7 @@
 use Test;
 use lib 'lib';
 
-use Geo::Coordinates;
+use Geo::Geometry;
 
 my $p  = Point.new(10, 20);
 my $z  = PointZ.new(10, 20, 30);

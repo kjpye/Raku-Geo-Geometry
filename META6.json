@@ -1,6 +1,6 @@
 {
     "perl" : "6.c",
-    "name" : "Geo::Coordinates",
+    "name" : "Geo::Geometry",
     "api"  : "1",
     "auth" : "github:kjpye",
     "version" : "0.0.1",
@@ -8,7 +8,7 @@
     "authors" : [ "Kevin Pye" ],
     "license" : "Artistic-2.0",
     "provides" : {
-        "Geo::Coordinates" : "lib/Geo/Coordinates.rakumod"
+        "Geo::Geometry" : "lib/Geo/Geometry.rakumod"
     },
     "depends" : [ ],
     "build-depends" : [ ],
@@ -16,5 +16,5 @@
     "resources" : [ ],
     "tags": [
     ],
-    "source-url" : "git://github.com/kjpye/Raku-Geo-Coordinates"
+    "source-url" : "git://github.com/kjpye/Raku-Geo-Geometry"
 }
