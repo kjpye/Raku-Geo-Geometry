@@ -59,7 +59,7 @@ class Point is Geometry {
     has num $.y is required;
 
     method type { wkbPoint };
-    method new($x, $y) { self.bless(x => $x.Num, y => $y.Num) }
+    multi method new($x, $y) { self.bless(x => $x.Num, y => $y.Num) }
     method Str() { "{$!x} {$!y}" }
     method wkt() { "POINT({self.Str})"; }
     method tobuf($endian) {
@@ -258,6 +258,22 @@ class LineStringZM is Geometry {
     }
 }
 
+    # Calculate the winding of a linear ring
+    #
+    # Assumes the ring is well-formed
+    # Works for Point, PointZ, PointM and PointZM by ignoring everything but
+    #     the x and y coordinates
+    #
+    # There are certainly much more efficient ways to calculate this...
+    
+    sub winding(@points) {
+        my $area; # Actually double the area, but who cares?
+        for 0 .. +@points - 2 -> $i {
+            $area += (@points[$i].y + @points[$i+1].y) * (@points[$i+1].x - @points[$i].x);
+        }
+        $area ≥ 0 ?? 1 !! -1;
+    }
+    
 class LinearRing is Geometry {
     has $!num-points;
     has Point @!points is required is built;
@@ -265,6 +281,9 @@ class LinearRing is Geometry {
 # TWEAK should check that the linear ring is simple and closed
     method TWEAK { $!num-points = +@!points ; }
     method Str() { @!points.map({.Str}).join(',') };
+    method winding() {
+        winding(@!points);
+    }
     method tobuf($endian) {
         my $b = Buf.allocate(4 + 16 × $!num-points);
         $b.write-int32(0, $!num-points, $endian);
@@ -283,6 +302,9 @@ class LinearRingZ is Geometry {
 
     method TWEAK { $!num-points = +@!points ; }
     method Str() { @!points.map({.Str}).join(',') };
+    method winding() {
+        winding(@!points);
+    }
     method tobuf($endian) {
         my $b = Buf.new(0);
         $b.reallocate(4 + 24 × $!num-points);
@@ -303,6 +325,9 @@ class LinearRingM is Geometry {
 
     method TWEAK { $!num-points = +@!points ; }
     method Str() { @!points.map({.Str}).join(',') };
+    method winding() {
+        winding(@!points);
+    }
     method tobuf($endian) {
         my $b = Buf.allocate(4 + 24 × $!num-points);
         $b.write-int32(0, $!num-points, $endian);
@@ -322,6 +347,9 @@ class LinearRingZM is Geometry {
 
     method TWEAK { $!num-points = +@!points ; }
     method Str() { @!points.map({.Str}).join(',') };
+    method winding() {
+        winding(@!points);
+    }
     method tobuf($endian) {
         my $b = Buf.allocate(4 + 32 × $!num-points);
         $b.write-int32(0, $!num-points, $endian);
