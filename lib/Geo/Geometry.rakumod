@@ -81,7 +81,7 @@ class PointZ is Geometry {
     has num $.z is required;
 
     method type { wkbPointZ }
-    method new($x, $y, $z) { self.bless(x => $x.Num, y => $y.Num, z => $z.Num) }
+    multi method new($x, $y, $z) { self.bless(x => $x.Num, y => $y.Num, z => $z.Num) }
     method Str() { "{$!x} {$!y} {$!z}" }
     method wkt() { "POINTZ({self.Str})"; }
     method tobuf($endian) {
@@ -104,7 +104,7 @@ class PointM is Geometry {
     has num $.m is required;
     
     method type { wkbPointM }
-    method new($x, $y, $m) { self.bless(x => $x.Num, y => $y.Num, m => $m.Num) }
+    multi method new($x, $y, $m) { self.bless(x => $x.Num, y => $y.Num, m => $m.Num) }
     method Str() { "{$!x} {$!y} {$!m}" }
     method wkt() { "POINTM({self.Str})"; }
     method tobuf($endian) {
@@ -128,7 +128,7 @@ class PointZM is Geometry {
     has num $.m is required;
     
     method type { wkbPointZM }
-    method new($x, $y, $z, $m) { self.bless(x => $x.Num, y => $y.Num, z => $z.Num, m => $m.Num) }
+    multi method new($x, $y, $z, $m) { self.bless(x => $x.Num, y => $y.Num, z => $z.Num, m => $m.Num) }
     method Str() { "{$!x} {$!y} {$!z} {$!m}" }
     method wkt() { "POINTZM({self.Str})"; }
     method tobuf($endian) {
@@ -1721,3 +1721,157 @@ our sub from-wkb(Buf $buff) {
     fail "from-wkb: buffer too short" if $offset > $length;
     $geometry;
 }
+
+=begin pod
+=TITLE Geo::Geometry
+=head1 Geo::Geometry
+
+A series of classes for storing geographic data
+
+=head1 Generic Methods
+
+The following methods are available for most classes. Classes for which they are not available are documented below.
+
+=head2 type
+
+The C<type> method returns a member of the WKBGeometryType enum corresponding to the geometry type.
+
+=head2 Str
+
+The C<Str> method returns a string representing the object.
+
+=head2 tobuf
+
+The C<tobuf> method is used internally as part of generating the C<wkb> output. It is probably not otherwise useful.
+
+=head2 wkb
+
+The C<wkb> method will produce a C<Buf> object with the well-known-binary representation of the object. An optional named argument C<byteorder> parameter is available. The value of the argument is one of the values of the C<WKBByteOrder> enum. The default value is C<wkbXDR> (little endian) with the alternative being C<wkbNDR> (big endian).
+
+=head2 wkt
+
+The C<wkt> method returns a string containing the well-known text representation of the geometry.
+
+=head1 Subroutines
+
+=head2 from-wkt
+
+The C<from-wkt> subroutine takes a string as parameter and returns a C<Geometry> object if the string contains a WKT represenation of a geometry.
+
+=head2 from-wkb
+
+The C<from-wkb> subroutine takes a Buf as parameter, and returns a C<Geometry> object is the Buf contains a WKΒrepresentation of a geometry.
+=head1 Object types (classes)
+
+=head2 Geometry
+
+An object in the C<Geometry> class contains, in general, no attributes or methods, except as defined as below. It is a generic object which can contain any of the other geometry classes.
+
+If you want to check whether a variable contains any of the gemoetry classes, then code like
+=begin code
+  if $variable ~~ Geometry { ... }
+=end code
+can be useful.
+
+=head2 Point
+=head2 PointZ
+=head2 PointM
+=head2 PointZM
+
+The C<Point> class represents a single point geometry. It has two attributes, C<x> and C<y>, each of which is constrained to be a 64-bit floating point number (C<num>).
+
+The C<PointZ> class also contains a third attribute C<z> to represent a third dimension.
+
+The C<PointM> class, in addition to the C<X> and C<y> attributes contains an C<m> attribute which can contain an arbitrary "measure" in addition to the two-dimensional location.
+
+The C<PointMZ> class combines the C<z> attribute of C<PointZ> and the C<m> attribute of C<PointM>.
+
+An object of each class may be constructed either by using named parameters (C<Point.new(x => 10, y => 12)>, or by using positional parameters (C<PointZ.new(1,2,3)>). When positional parameters are used, the ordering of the parameters is C<x>, C<y>, C<z>, C<m>; omitting those parameters which are not appropriate for the object type.
+
+All the parameters of a point geometry are required. C<NaN> might be used if an C<m> parameter for example were not required.
+
+=head2 LineString
+=head2 LineStringZ
+=head2 LineStringM
+=head2 LineStringZM
+
+The C<LineString> class represents a single line, a sequence of C<Point>s, not necessarily closed.
+
+Similarly, C<LineStringZ>, C<LineStringM> and C<LineStringZM> are lines consisting of  sequences of C<PointZ>s, C<PointM>s and C<PointZM>s respectively.
+
+An object in the LineString family is created by passing an array of the appropriate point type geometries, to the named argument C<points>.
+
+At the moment there is no way of accessing the contents of a LineString geometry other than using the standard methods.
+
+=head2 LinearRing
+=head2 LinearRingZ
+=head2 LinearRingM
+=head2 LinearRingZM
+
+Objects in the LinearRing classes are not normally intended for end users, apart from their use in creating more complex objects. None of the usual methods apply to these types of object. (There is a C<tobuf> method, but it should not normally be used by end-user code; it is necessary for internal use.)
+
+A linear ring is similar to a line string, but is closed; i.e. the last point should be identical to the first point. This is not currently enforced, but may be in the future. Creation of a linear ring is the same as that of a line string. The ring should be simple; the path should not cross itself. This is also not enforced.
+
+Each of these classes has a C<winding> method. This determines whether the linear ring is clockwise (a positive number is returned) or anti-clockwise (a negative number is returned). This method will be unreliable unless the linear ring actually is a simple closed loop. The winding method ignores everything except the C<x> and C<y> attributes.
+
+=head2 Polygon
+=head2 PolygonZ
+=head2 PolygonM
+=head2 PolygonZM
+
+A C<Polygon> consists of one or more C<LinearRings>. In general, the first linear ring should be clockwise (with a positive winding number). The other linear rings should be fully enclosed within the first and be disjoint from each other. They should have a negative winding number. These rings represent a polygon (the first ring) and holes within that polygon, represented by the other rings. Having only a single ring specified is acceptable (and normal under most circumstances), representing a polygon without holes.
+
+A C<Polygon> is created using an array of rings, such as C<Polygon.new(rings => @rings)>.
+
+C<PolygonZ>, C<PolygonM> and C<PolygonZM> behave similarly.
+
+=head2 Triangle
+=head2 TriangleZ
+=head2 TriangleM
+=head2 TriangleZM
+
+To be added.
+
+=head2 PolyhedralSurface
+=head2 PolyhedralSurfaceZ
+=head2 PolyhedralSurfaceM
+=head2 PolyhedralSurfaceZM
+
+To be added.
+
+=head2 TIN
+=head2 TINZ
+=head2 TINM
+=head2 TINZM
+
+To be added.
+
+=head2 MultiPoint
+=head2 MultiPointZ
+=head2 MultiPointM
+=head2 MultiPointZM
+
+The MultiPoint classes behave just like LineStrings, including their definition. The difference is the intent of the object. A LineString, as the name implies, forms a line. A MultiPoint object is just a collection of points.
+
+=head2 MultiLineString
+=head2 MultiLineStringZ
+=head2 MultiLineStringM
+=head2 MultiLineStringZM
+
+A C<MultiLineString> object contains an array of C<LineString>s. It is created with that array: C<MultiLineString.new(linestrings => @array-of-linestrings)>.
+
+=head2 MultiPolygon
+=head2 MultiPolygonZ
+=head2 MultiPolygonM
+=head2 MultiPolygonZM
+
+Just as a C<MultiPoint> is a collections of C<Point>s, and a C<MultiLineString> is a collection of C<LineString>s, a C<MultiPolygon> is a collection of C<Polygon>s.
+
+=head2 GeometryCollection
+=head2 GeometryCollectionZ
+=head2 GeometryCollectionM
+=head2 GeometryCollectionZM
+
+To be added.
+
+=end pod
