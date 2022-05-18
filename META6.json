@@ -1,20 +1,26 @@
 {
-    "perl" : "6.c",
-    "name" : "Geo::Geometry",
-    "api"  : "1",
-    "auth" : "github:kjpye",
-    "version" : "0.0.1",
-    "description" : "Classes and routines for geographic coordinates",
-    "authors" : [ "Kevin Pye" ],
-    "license" : "Artistic-2.0",
-    "provides" : {
-        "Geo::Geometry" : "lib/Geo/Geometry.rakumod"
-    },
-    "depends" : [ ],
-    "build-depends" : [ ],
-    "test-depends" : [ ],
-    "resources" : [ ],
-    "tags": [
-    ],
-    "source-url" : "git://github.com/kjpye/Raku-Geo-Geometry"
+  "api": "1",
+  "auth": "zef:kjpye",
+  "authors": [
+    "Kevin Pye (kjfez@pye.id.au)"
+  ],
+  "build-depends": [
+  ],
+  "depends": [
+  ],
+  "description": "Classes and routines for geographic coordinates",
+  "license": "Artistic-2.0",
+  "name": "Geo::Geometry",
+  "perl": "6.c",
+  "provides": {
+    "Geo::Geometry": "lib/Geo/Geometry.rakumod"
+  },
+  "resources": [
+  ],
+  "source-url": "git://github.com/kjpye/Raku-Geo-Geometry.git",
+  "tags": [
+  ],
+  "test-depends": [
+  ],
+  "version": "0.0.1"
 }

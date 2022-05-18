@@ -51,10 +51,10 @@ enum WKBGeometryType (
     wkbTriangleZM           => 3017,
 );
 
-class Geometry {
+role Geometry {
 }
 
-class Point is Geometry {
+class Point does Geometry {
     has num $.x is required;
     has num $.y is required;
 
@@ -75,7 +75,7 @@ class Point is Geometry {
     }
 }
 
-class PointZ is Geometry {
+class PointZ does Geometry {
     has num $.x is required;
     has num $.y is required;
     has num $.z is required;
@@ -98,7 +98,7 @@ class PointZ is Geometry {
     }
 }
 
-class PointM is Geometry {
+class PointM does Geometry {
     has num $.x is required;
     has num $.y is required;
     has num $.m is required;
@@ -121,7 +121,7 @@ class PointM is Geometry {
     }
 }
 
-class PointZM is Geometry {
+class PointZM does Geometry {
     has num $.x is required;
     has num $.y is required;
     has num $.z is required;
@@ -146,7 +146,7 @@ class PointZM is Geometry {
     }
 }
 
-class LineString is Geometry {
+class LineString does Geometry {
     has $!type = wkbLineString;
     has $!num-points;
     has Point @!points is required is built;
@@ -173,7 +173,7 @@ class LineString is Geometry {
     }
 }
 
-class LineStringZ is Geometry {
+class LineStringZ does Geometry {
     has $!type = wkbLineStringZ;
     has $!num-points;
     has PointZ @!points is required is built;
@@ -201,7 +201,7 @@ class LineStringZ is Geometry {
     }
 }
 
-class LineStringM is Geometry {
+class LineStringM does Geometry {
     has $!type = wkbLineStringM;
     has $!num-points;
     has PointM @!points is required is built;
@@ -229,7 +229,7 @@ class LineStringM is Geometry {
     }
 }
 
-class LineStringZM is Geometry {
+class LineStringZM does Geometry {
     has $!type = wkbLineStringZM;
     has $!num-points;
     has PointZM @!points is required is built;
@@ -274,7 +274,7 @@ class LineStringZM is Geometry {
         $area ≥ 0 ?? 1 !! -1;
     }
     
-class LinearRing is Geometry {
+class LinearRing does Geometry {
     has $!num-points;
     has Point @!points is required is built;
 
@@ -296,7 +296,7 @@ class LinearRing is Geometry {
     }
 }
 
-class LinearRingZ is Geometry {
+class LinearRingZ does Geometry {
     has $!num-points;
     has PointZ @!points is required is built;
 
@@ -319,7 +319,7 @@ class LinearRingZ is Geometry {
     }
 }
 
-class LinearRingM is Geometry {
+class LinearRingM does Geometry {
     has $!num-points;
     has PointM @!points is required is built;
 
@@ -341,7 +341,7 @@ class LinearRingM is Geometry {
     }
 }
 
-class LinearRingZM is Geometry {
+class LinearRingZM does Geometry {
     has $!num-points;
     has PointZM @!points is required is built;
 
@@ -364,7 +364,7 @@ class LinearRingZM is Geometry {
     }
 }
 
-class Polygon is Geometry {
+class Polygon does Geometry {
     has $!type = wkbPolygon;
     has $!num-rings;
     has LinearRing @!rings is required is built;
@@ -382,7 +382,7 @@ class Polygon is Geometry {
     }
 }
 
-class PolygonZ is Geometry {
+class PolygonZ does Geometry {
     has $!type = wkbPolygonZ;
     has $!num-rings;
     has LinearRingZ @!rings is required is built;
@@ -400,7 +400,7 @@ class PolygonZ is Geometry {
     }
 }
 
-class PolygonM is Geometry {
+class PolygonM does Geometry {
     has $!type = wkbPolygonM;
     has $!num-rings;
     has LinearRingM @!rings is required is built;
@@ -418,7 +418,7 @@ class PolygonM is Geometry {
     }
 }
 
-class PolygonZM is Geometry {
+class PolygonZM does Geometry {
     has $!type = wkbPolygonZM;
     has $!num-rings;
     has LinearRingZM @!rings is required is built;
@@ -436,7 +436,7 @@ class PolygonZM is Geometry {
     }
 }
 
-class Triangle is Geometry {
+class Triangle does Geometry {
     has $!type = wkbTriangle;
     has $!num-rings;
     has LinearRing @!rings is required is built;
@@ -454,7 +454,7 @@ class Triangle is Geometry {
     }
 }
 
-class TriangleZ is Geometry {
+class TriangleZ does Geometry {
     has $!type = wkbTriangleZ;
     has $!num-rings;
     has LinearRingZ @!rings is required is built;
@@ -472,7 +472,7 @@ class TriangleZ is Geometry {
     }
 }
 
-class TriangleM is Geometry {
+class TriangleM does Geometry {
     has $!type = wkbTriangleM;
     has $!num-rings;
     has LinearRingM @!rings is required is built;
@@ -490,7 +490,7 @@ class TriangleM is Geometry {
     }
 }
 
-class TriangleZM is Geometry {
+class TriangleZM does Geometry {
     has $!type = wkbTriangleZM;
     has $!num-rings;
     has LinearRingZM @!rings is required is built;
@@ -508,7 +508,7 @@ class TriangleZM is Geometry {
     }
 }
 
-class PolyhedralSurface is Geometry {
+class PolyhedralSurface does Geometry {
     has $!type = wkbPolyhedralSurface;
     has $!num-polygons;
     has Polygon @!polygons is required is built;
@@ -527,7 +527,7 @@ class PolyhedralSurface is Geometry {
 }
 
 
-class PolyhedralSurfaceZ is Geometry {
+class PolyhedralSurfaceZ does Geometry {
     has $!type = wkbPolyhedralSurfaceZ;
     has $!num-polygons;
     has PolygonZ @!polygons is required is built;
@@ -546,7 +546,7 @@ class PolyhedralSurfaceZ is Geometry {
 }
 
 
-class PolyhedralSurfaceM is Geometry {
+class PolyhedralSurfaceM does Geometry {
     has $!type = wkbPolyhedralSurfaceM;
     has $!num-polygons;
     has PolygonM @!polygons is required is built;
@@ -565,7 +565,7 @@ class PolyhedralSurfaceM is Geometry {
 }
 
 
-class PolyhedralSurfaceZM is Geometry {
+class PolyhedralSurfaceZM does Geometry {
     has $!type = wkbPolyhedralSurfaceZM;
     has $!num-polygons;
     has PolygonZM @!polygons is required is built;
@@ -583,7 +583,7 @@ class PolyhedralSurfaceZM is Geometry {
     }
 }
 
-class TIN is Geometry {
+class TIN does Geometry {
     has $!type = wkbTIN;
     has $!num-polygons;
     has Polygon @!polygons is required is built;
@@ -602,7 +602,7 @@ class TIN is Geometry {
 }
 
 
-class TINZ is Geometry {
+class TINZ does Geometry {
     has $!type = wkbTINZ;
     has $!num-polygons;
     has PolygonZ @!polygons is required is built;
@@ -621,7 +621,7 @@ class TINZ is Geometry {
 }
 
 
-class TINM is Geometry {
+class TINM does Geometry {
     has $!type = wkbTINM;
     has $!num-polygons;
     has PolygonM @!polygons is required is built;
@@ -640,7 +640,7 @@ class TINM is Geometry {
 }
 
 
-class TINZM is Geometry {
+class TINZM does Geometry {
     has $!type = wkbTINZM;
     has $!num-polygons;
     has PolygonZM @!polygons is required is built;
@@ -658,7 +658,7 @@ class TINZM is Geometry {
     }
 }
 
-class MultiPoint is Geometry {
+class MultiPoint does Geometry {
     has $!type = wkbMultiPoint;
     has $!num-points;
     has Point @!points is required is built;
@@ -684,7 +684,7 @@ class MultiPoint is Geometry {
 
 
     
-class MultiPointZ is Geometry {
+class MultiPointZ does Geometry {
     has $!type = wkbMultiPointZ;
     has $!num-points;
     has PointZ @!points is required is built;
@@ -708,7 +708,7 @@ class MultiPointZ is Geometry {
     }
 }
     
-class MultiPointM is Geometry {
+class MultiPointM does Geometry {
     has $!type = wkbMultiPointM;
     has $!num-points;
     has PointM @!points is required is built;
@@ -732,7 +732,7 @@ class MultiPointM is Geometry {
     }
 }
     
-class MultiPointZM is Geometry {
+class MultiPointZM does Geometry {
     has $!type = wkbMultiPointZM;
     has $!num-points;
     has PointZM @!points is required is built;
@@ -756,7 +756,7 @@ class MultiPointZM is Geometry {
     }
 }
 
-class MultiLineString is Geometry {
+class MultiLineString does Geometry {
     has $!type = wkbMultiLineString;
     has $!num-linestrings;
     has LineString @!linestrings is required is built;
@@ -779,7 +779,7 @@ class MultiLineString is Geometry {
     }
 }
 
-class MultiLineStringZ is Geometry {
+class MultiLineStringZ does Geometry {
     has $!type = wkbMultiLineStringZ;
     has $!num-linestrings;
     has LineStringZ @!linestrings is required is built;
@@ -800,7 +800,7 @@ class MultiLineStringZ is Geometry {
     }
 }
 
-class MultiLineStringM is Geometry {
+class MultiLineStringM does Geometry {
     has $!type = wkbMultiLineStringM;
     has $!num-linestrings;
     has LineStringM @!linestrings is required is built;
@@ -821,7 +821,7 @@ class MultiLineStringM is Geometry {
     }
 }
 
-class MultiLineStringZM is Geometry {
+class MultiLineStringZM does Geometry {
     has $!type = wkbMultiLineStringZM;
     has $!num-linestrings;
     has LineStringZM @!linestrings is required is built;
@@ -842,7 +842,7 @@ class MultiLineStringZM is Geometry {
     }
 }
 
-class MultiPolygon is Geometry {
+class MultiPolygon does Geometry {
     has $!type = wkbMultiPolygon;
     has $!num-polygons;
     has Polygon @!polygons is required is built;
@@ -865,7 +865,7 @@ class MultiPolygon is Geometry {
     }
 }
 
-class MultiPolygonZ is Geometry {
+class MultiPolygonZ does Geometry {
     has $!type = wkbMultiPolygonZ;
     has $!num-polygons;
     has PolygonZ @!polygons is required is built;
@@ -886,7 +886,7 @@ class MultiPolygonZ is Geometry {
     }
 }
 
-class MultiPolygonM is Geometry {
+class MultiPolygonM does Geometry {
     has $!type = wkbMultiPolygonM;
     has $!num-polygons;
     has PolygonM @!polygons is required is built;
@@ -907,7 +907,7 @@ class MultiPolygonM is Geometry {
     }
 }
 
-class MultiPolygonZM is Geometry {
+class MultiPolygonZM does Geometry {
     has $!type = wkbMultiPolygonZM;
     has $!num-polygons;
     has PolygonZM @!polygons is required is built;
@@ -928,7 +928,7 @@ class MultiPolygonZM is Geometry {
     }
 }
 
-class GeometryCollection is Geometry {
+class GeometryCollection does Geometry {
     has $!num-geometries;
     has Geometry @!geometries is required is built;
 
@@ -948,7 +948,7 @@ class GeometryCollection is Geometry {
     }
 }
 
-class GeometryCollectionZ is Geometry {
+class GeometryCollectionZ does Geometry {
     has $!num-geometries;
     has Geometry @!geometries is required is built;
 
@@ -968,7 +968,7 @@ class GeometryCollectionZ is Geometry {
     }
 }
 
-class GeometryCollectionM is Geometry {
+class GeometryCollectionM does Geometry {
     has $!num-geometries;
     has Geometry @!geometries is required is built;
 
@@ -988,7 +988,7 @@ class GeometryCollectionM is Geometry {
     }
 }
 
-class GeometryCollectionZM is Geometry {
+class GeometryCollectionZM does Geometry {
     has $!num-geometries;
     has Geometry @!geometries is required is built;
 
@@ -1726,48 +1726,126 @@ our sub from-wkb(Buf $buff) {
 =TITLE Geo::Geometry
 =head1 Geo::Geometry
 
-A series of classes for storing geographic data
+A series of classes for storing geographic data.
+
+This module is based on chapters 8 and 9 of the Open Geospatial Consortium's
+I<OpenGISⓇ Implemantation Standard for Geographic Information - Simple Feature Access - part 1: Common architecture>.
+This can be obtained from L<https://www.ogc.org/standards/sfa>.
 
 =head1 Generic Methods
 
-The following methods are available for most classes. Classes for which they are not available are documented below.
+The following methods are available for most classes.
+Classes for which they are not available are documented below.
 
 =head2 type
 
-The C<type> method returns a member of the WKBGeometryType enum corresponding to the geometry type.
+The C<type> method returns a member of the C<WKBGeometryType> enum
+corresponding to the geometry type.
 
 =head2 Str
 
 The C<Str> method returns a string representing the object.
-
-=head2 tobuf
-
-The C<tobuf> method is used internally as part of generating the C<wkb> output. It is probably not otherwise useful.
+Note that this is B<not> the WKT representation, which can be obtained
+using the C<wkt> method described below.
 
 =head2 wkb
 
-The C<wkb> method will produce a C<Buf> object with the well-known-binary representation of the object. An optional named argument C<byteorder> parameter is available. The value of the argument is one of the values of the C<WKBByteOrder> enum. The default value is C<wkbXDR> (little endian) with the alternative being C<wkbNDR> (big endian).
+The C<wkb> method will produce a C<Buf> object with the
+well-known-binary representation of the object. An optional
+named argument C<byteorder> parameter is available.
+The value of the argument is one of the values of the
+C<WKBByteOrder> enum.
+The default value is C<wkbXDR> (little endian)
+with the alternative being C<wkbNDR> (big endian).
 
 =head2 wkt
 
 The C<wkt> method returns a string containing the well-known text representation of the geometry.
 
+=head2 tobuf
+
+The C<tobuf> method is used internally; This interface may change without warning.
+
 =head1 Subroutines
 
 =head2 from-wkt
 
-The C<from-wkt> subroutine takes a string as parameter and returns a C<Geometry> object if the string contains a WKT represenation of a geometry.
+The C<from-wkt> subroutine takes a string as parameter
+and returns a C<Geometry> object if the string contains
+a WKT representation of a geometry.
 
 =head2 from-wkb
 
-The C<from-wkb> subroutine takes a Buf as parameter, and returns a C<Geometry> object is the Buf contains a WKΒrepresentation of a geometry.
+The C<from-wkb> subroutine takes a Buf as parameter,
+and returns a C<Geometry> object if the Buf contains
+a WKΒ representation of a geometry.
+
+=head1 Enums
+
+Two enums are defined which represent values used
+in the WKB representation of a geometry.
+
+=head2 WKBByteOrder
+
+The C<WKBByteOrder> enum gives the values used in the byte order field of a WKB representation. It contains two values C<wkbXDR> (0, little-endian) and C<wkbBDR> (1, big-endian).
+
+=head2 WKBGeometryType
+
+The C<WKBGeometryType> enum contains the values used in the geometry type filed of a WKB representation. It allows for the following values:
+
+=begin table
+    1 | wkbPoint
+    2 | wkbLineString
+    3 | wkbPolygon
+    4 | wkbMultiPoint
+    5 | wkbMultiLineString
+    6 | wkbMultiPolygon
+    7 | wkbGeometryCollection
+   15 | wkbPolyhedralSurface
+   16 | wkbTIN
+   17 | wkbTriangle
+ 1001 | wkbPointZ
+ 1002 | wkbLineStringZ
+ 1003 | wkbPolygonZ
+ 1004 | wkbMultiPointZ
+ 1005 | wkbMultiLineStringZ
+ 1006 | wkbMultiPolygonZ
+ 1007 | wkbGeometryCollectionZ
+ 1015 | wkbPolyhedralSurfaceZ
+ 1016 | wkbTINZ
+ 1017 | wkbTriangleZ
+ 2001 | wkbPointM
+ 2002 | wkbLineStringM
+ 2003 | wkbPolygonM
+ 2004 | wkbMultiPointM
+ 2005 | wkbMultiLineStringM
+ 2006 | wkbMultiPolygonM
+ 2007 | wkbGeometryCollectionM
+ 2015 | wkbPolyhedralSurfaceM
+ 2016 | wkbTINM
+ 2017 | wkbTriangleM
+ 3001 | wkbPointZM
+ 3002 | wkbLineStringZM
+ 3003 | wkbPolygonZM
+ 3004 | wkbMultiPointZM
+ 3005 | wkbMultiLineStringZM
+ 3006 | wkbMultiPolygonZM
+ 3007 | wkbGeometryCollectionZM
+ 3015 | wkbPolyhedralSurfaceZM
+ 3016 | wkbTINZM
+ 3017 | wkbTriangleZM
+=end table
+
 =head1 Object types (classes)
 
 =head2 Geometry
 
-An object in the C<Geometry> class contains, in general, no attributes or methods, except as defined as below. It is a generic object which can contain any of the other geometry classes.
+C<Geometry> is a role which all the other objects inherit.
+It contains no methods, and is simply a marker that another class
+is a Geometry type.
 
-If you want to check whether a variable contains any of the gemoetry classes, then code like
+If you want to check whether a variable contains any of
+the gemoetry classes, then code like
 =begin code
   if $variable ~~ Geometry { ... }
 =end code
@@ -1778,41 +1856,74 @@ can be useful.
 =head2 PointM
 =head2 PointZM
 
-The C<Point> class represents a single point geometry. It has two attributes, C<x> and C<y>, each of which is constrained to be a 64-bit floating point number (C<num>).
+The C<Point> class represents a single point geometry.
+It has two attributes, C<x> and C<y>, each of which isconstrained to be a 64-bit floating point number (C<num>).
 
-The C<PointZ> class also contains a third attribute C<z> to represent a third dimension.
+The C<PointZ> class also contains a third attribute C<z>
+to represent a third dimension.
 
-The C<PointM> class, in addition to the C<X> and C<y> attributes contains an C<m> attribute which can contain an arbitrary "measure" in addition to the two-dimensional location.
+The C<PointM> class, in addition to the C<X> and C<y>
+attributes contains an C<m> attribute which can contain
+an arbitrary "measure" in addition to the two-dimensionallocation.
 
-The C<PointMZ> class combines the C<z> attribute of C<PointZ> and the C<m> attribute of C<PointM>.
+The C<PointMZ> class combines the C<z> attribute of C<PointZ>
+and the C<m> attribute of C<PointM>.
 
-An object of each class may be constructed either by using named parameters (C<Point.new(x => 10, y => 12)>, or by using positional parameters (C<PointZ.new(1,2,3)>). When positional parameters are used, the ordering of the parameters is C<x>, C<y>, C<z>, C<m>; omitting those parameters which are not appropriate for the object type.
+An object of each class may be constructed either by using
+named parameters (C<<Point.new(x => 10, y => 12)>>,
+or by using positional parameters (C<<PointZ.new(1,2,3)>>).
+When positional parameters are used, the ordering of
+the parameters is C<x>, C<y>, C<z>, C<m>;
+omitting those parameters which are not appropriate
+for the object type.
 
-All the parameters of a point geometry are required. C<NaN> might be used if an C<m> parameter for example were not required.
+All the parameters of a point geometry are required.
+C<NaN> might be used if an C<m> parameter for example
+were not required.
 
 =head2 LineString
 =head2 LineStringZ
 =head2 LineStringM
 =head2 LineStringZM
 
-The C<LineString> class represents a single line, a sequence of C<Point>s, not necessarily closed.
+The C<LineString> class represents a single line,
+a sequence of C<Point>s, not necessarily closed.
 
-Similarly, C<LineStringZ>, C<LineStringM> and C<LineStringZM> are lines consisting of  sequences of C<PointZ>s, C<PointM>s and C<PointZM>s respectively.
+Similarly, C<LineStringZ>, C<LineStringM> and C<LineStringZM>
+are lines consisting of  sequences of C<PointZ>s, C<PointM>sand C<PointZM>s respectively.
 
-An object in the LineString family is created by passing an array of the appropriate point type geometries, to the named argument C<points>.
+An object in the LineString family is created by passing
+an array of the appropriate point type geometries,
+to the named argument C<points>.
 
-At the moment there is no way of accessing the contents of a LineString geometry other than using the standard methods.
+At the moment there is no way of accessing the contents
+of a LineString geometry other than using the standard methods.
 
 =head2 LinearRing
 =head2 LinearRingZ
 =head2 LinearRingM
 =head2 LinearRingZM
 
-Objects in the LinearRing classes are not normally intended for end users, apart from their use in creating more complex objects. None of the usual methods apply to these types of object. (There is a C<tobuf> method, but it should not normally be used by end-user code; it is necessary for internal use.)
+Objects in the LinearRing classes are not normally
+intended for end users, apart from their use in creating
+more complex objects. None of the usual methods apply to
+these types of object.
 
-A linear ring is similar to a line string, but is closed; i.e. the last point should be identical to the first point. This is not currently enforced, but may be in the future. Creation of a linear ring is the same as that of a line string. The ring should be simple; the path should not cross itself. This is also not enforced.
+A linear ring is similar to a line string, but is closed;
+i.e. the last point should be identical to the first point.
+This is not currently enforced, but may be in the future.
+Creation of a linear ring is the same as that of a line string.
+The ring should be simple; the path should not cross itself.
+This is also not enforced.
 
-Each of these classes has a C<winding> method. This determines whether the linear ring is clockwise (a positive number is returned) or anti-clockwise (a negative number is returned). This method will be unreliable unless the linear ring actually is a simple closed loop. The winding method ignores everything except the C<x> and C<y> attributes.
+Each of these classes has a C<winding> method.
+This determines whether the linear ring is clockwise
+(a positive number is returned) or anti-clockwise
+(a negative number is returned).
+This method will be unreliable unless the linear ring
+actually is a simple closed loop.
+The winding method ignores everything except the
+C<x> and C<y> attributes.
 
 =head2 Polygon
 =head2 PolygonZ
@@ -1821,7 +1932,7 @@ Each of these classes has a C<winding> method. This determines whether the linea
 
 A C<Polygon> consists of one or more C<LinearRings>. In general, the first linear ring should be clockwise (with a positive winding number). The other linear rings should be fully enclosed within the first and be disjoint from each other. They should have a negative winding number. These rings represent a polygon (the first ring) and holes within that polygon, represented by the other rings. Having only a single ring specified is acceptable (and normal under most circumstances), representing a polygon without holes.
 
-A C<Polygon> is created using an array of rings, such as C<Polygon.new(rings => @rings)>.
+A C<Polygon> is created using an array of rings, such as C<<Polygon.new(rings => @rings)>>.
 
 C<PolygonZ>, C<PolygonM> and C<PolygonZM> behave similarly.
 
@@ -1830,36 +1941,47 @@ C<PolygonZ>, C<PolygonM> and C<PolygonZM> behave similarly.
 =head2 TriangleM
 =head2 TriangleZM
 
-To be added.
+A triangle is a polygon where the outer ring has exactly four points,
+the fourth being the same as the first and otherwise having no oints in common.
+The points must not be in a straight line. No internal rings are permitted.
 
 =head2 PolyhedralSurface
 =head2 PolyhedralSurfaceZ
 =head2 PolyhedralSurfaceM
 =head2 PolyhedralSurfaceZM
 
-To be added.
+A polyhedral surface is a set of contiguous non-overlapping polygons. (There are further restrictions.)
 
 =head2 TIN
 =head2 TINZ
 =head2 TINM
 =head2 TINZM
 
-To be added.
+A triangular irregular network is a polyhedral surface consisting
+only of triangles.
 
 =head2 MultiPoint
 =head2 MultiPointZ
 =head2 MultiPointM
 =head2 MultiPointZM
 
-The MultiPoint classes behave just like LineStrings, including their definition. The difference is the intent of the object. A LineString, as the name implies, forms a line. A MultiPoint object is just a collection of points.
+The MultiPoint classes behave just like LineStrings,
+including their definition.
+The difference is the intent of the object.
+A LineString, as the name implies, forms a line.
+A MultiPoint object is just a collection of points.
 
 =head2 MultiLineString
 =head2 MultiLineStringZ
 =head2 MultiLineStringM
 =head2 MultiLineStringZM
 
-A C<MultiLineString> object contains an array of C<LineString>s. It is created with that array: C<MultiLineString.new(linestrings => @array-of-linestrings)>.
-
+A C<MultiLineString> object contains an array of C<LineString>s.
+It is created with that array:
+=begin code
+     MultiLineString.new(linestrings => @array-of-linestrings)
+=end code
+     
 =head2 MultiPolygon
 =head2 MultiPolygonZ
 =head2 MultiPolygonM
@@ -1872,6 +1994,8 @@ Just as a C<MultiPoint> is a collections of C<Point>s, and a C<MultiLineString> 
 =head2 GeometryCollectionM
 =head2 GeometryCollectionZM
 
-To be added.
+A GeometryCollection is an arbitrary collection of geometry objects.
+Unlike a PointCollection, a LineStringCollection or a PolygonCollection,
+the objects do not need to be of the same geometry type.
 
 =end pod
