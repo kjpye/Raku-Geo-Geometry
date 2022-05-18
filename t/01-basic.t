@@ -3,6 +3,8 @@ use lib 'lib';
 
 use Geo::Geometry;
 
+plan 37;
+
 my $p  = Point.new(10, 20);
 my $z  = PointZ.new(10, 20, 30);
 my $m  = PointM.new(10, 20, 30);
@@ -70,21 +72,17 @@ is from-wkb($py.wkb(byteorder => wkbNDR)), $py, 'from-wkb polygon be';
 is from-wkb($py.wkb(byteorder => wkbXDR)), $py, 'from-wkb polygon le';
 
 my @examples = (
-    'Point (10 10)',
-    'LineString ( 10.01 10.3, 20 20.0, 30 50)',
-    'Polygon ((10 10.1, 10 20.2, 20 20.3, 20 15.4, 19 19))',
-    'MultiPoint ( (10.01 10.3), (20 20.0), (30 50))',
-    'MultiPoint ((10 10), (20 20))',
-    'MultiPolygon ( ((10 10, 10 20, 20 20, 20 15, 10 10)), ((60 60, 70 70, 80 60, 60 60 )) )',
-    'MultiLineString ( (10 10, 20 20), (15 15, 30 15) )',
-    'GeometryCollection ( POINT (10 10), POINT (30 30), LINESTRING (15 15, 20 20) )',
+    'Point(10 10)',
+    'LineString(10.01 10.3,20 20,30 50)',
+    'Polygon((10 10.1,10 20.2,20 20.3,20 15.4,19 19))',
+    'MultiPoint((10.01 10.3),(20 20),(30 50))',
+    'MultiPoint((10 10),(20 20))',
+    'MultiPolygon(((10 10,10 20,20 20,20 15,10 10)),((60 60,70 70,80 60,60 60)))',
+    'MultiLineString((10 10,20 20),(15 15,30 15))',
+    'GeometryCollection(Point(10 10),Point(30 30),LineString(15 15,20 20))',
 );
 
 for @examples -> $ex {
     my $wkt = WKT.parse($ex).made;
-    dd $wkt;
-    dd $wkt.wkt;
-    note '';
+    is $ex, $wkt.wkt, 'roundtrip';
 }
-
-done-testing;

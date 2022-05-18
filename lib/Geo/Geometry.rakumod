@@ -61,7 +61,7 @@ class Point does Geometry {
     method type { wkbPoint };
     multi method new($x, $y) { self.bless(x => $x.Num, y => $y.Num) }
     method Str() { "{$!x} {$!y}" }
-    method wkt() { "POINT({self.Str})"; }
+    method wkt() { "Point({self.Str})"; }
     method tobuf($endian) {
         my $b = Buf.allocate(16);
         $b.write-num64(0, $!x, $endian);
@@ -83,7 +83,7 @@ class PointZ does Geometry {
     method type { wkbPointZ }
     multi method new($x, $y, $z) { self.bless(x => $x.Num, y => $y.Num, z => $z.Num) }
     method Str() { "{$!x} {$!y} {$!z}" }
-    method wkt() { "POINTZ({self.Str})"; }
+    method wkt() { "PointZ({self.Str})"; }
     method tobuf($endian) {
         my $b = Buf.allocate(24);
         $b.write-num64(0,  $!x, $endian);
@@ -106,7 +106,7 @@ class PointM does Geometry {
     method type { wkbPointM }
     multi method new($x, $y, $m) { self.bless(x => $x.Num, y => $y.Num, m => $m.Num) }
     method Str() { "{$!x} {$!y} {$!m}" }
-    method wkt() { "POINTM({self.Str})"; }
+    method wkt() { "PointM({self.Str})"; }
     method tobuf($endian) {
         my $b = Buf.allocate(24);
         $b.write-num64(0,  $!x, $endian);
@@ -130,7 +130,7 @@ class PointZM does Geometry {
     method type { wkbPointZM }
     multi method new($x, $y, $z, $m) { self.bless(x => $x.Num, y => $y.Num, z => $z.Num, m => $m.Num) }
     method Str() { "{$!x} {$!y} {$!z} {$!m}" }
-    method wkt() { "POINTZM({self.Str})"; }
+    method wkt() { "PointZM({self.Str})"; }
     method tobuf($endian) {
         my $b = Buf.allocate(32);
         $b.write-num64(0,  $!x, $endian);
@@ -154,7 +154,7 @@ class LineString does Geometry {
     method type { $!type; }
     method TWEAK { $!num-points = +@!points; }
     method Str() { @!points.map({.Str}).join(',') };
-    method wkt() { "LINESTRING({self.Str})"; }
+    method wkt() { "LineString({self.Str})"; }
     method tobuf($endian) {
         my $b = Buf.allocate(4 + 16 × $!num-points);
         $b.write-uint32(0, $!num-points, $endian);
@@ -181,7 +181,7 @@ class LineStringZ does Geometry {
     method type { $!type; }
     method TWEAK { $!num-points = +@!points; }
     method Str() { @!points.map({.Str}).join(',') };
-    method wkt() { "LINESTRINGZ({self.Str})"; }
+    method wkt() { "LineStringZ({self.Str})"; }
     method tobuf($endian) {
         my $b = Buf.allocate(4 + 24 × $!num-points);
         $b.write-uint32(0, $!num-points, $endian);
@@ -209,7 +209,7 @@ class LineStringM does Geometry {
     method type { $!type; }
     method TWEAK { $!num-points = +@!points; }
     method Str() { @!points.map({.Str}).join(',') };
-    method wkt() { "LINESTRINGM({self.Str})"; }
+    method wkt() { "LineStringM({self.Str})"; }
     method tobuf($endian) {
         my $b = Buf.allocate(4 + 24 × $!num-points);
         $b.write-uint32(0, $!num-points, $endian);
@@ -237,7 +237,7 @@ class LineStringZM does Geometry {
     method type { $!type; }
     method TWEAK { $!num-points = +@!points; }
     method Str() { @!points.map({.Str}).join(',') };
-    method wkt() { "LINESTRINGZM({self.Str})"; }
+    method wkt() { "LineStringZM({self.Str})"; }
     method tobuf($endian) {
         my $b = Buf.allocate(4 + 32 × $!num-points);
         $b.write-uint32(0, $!num-points, $endian);
@@ -372,7 +372,7 @@ class Polygon does Geometry {
     method type { $!type; }
     method TWEAK { $!num-rings = +@!rings; }
     method Str() { '(' ~ @!rings.map({.Str}).join('),(') ~ ')' };
-    method wkt() { "POLYGON({self.Str})"; }
+    method wkt() { "Polygon({self.Str})"; }
     method wkb(:$byteorder = wkbXDR) {
         my $endian = $byteorder == wkbXDR ?? LittleEndian !! BigEndian;
         my $b = Buf.new($byteorder);
@@ -390,7 +390,7 @@ class PolygonZ does Geometry {
     method type { $!type; }
     method TWEAK { $!num-rings = +@!rings; }
     method Str() { '(' ~ @!rings.map({.Str}).join('),(') ~ ')' };
-    method wkt() { "POLYGONZ({self.Str})"; }
+    method wkt() { "PolygonZ({self.Str})"; }
     method wkb(:$byteorder = wkbXDR) {
         my $endian = $byteorder == wkbXDR ?? LittleEndian !! BigEndian;
         my $b = Buf.new($byteorder);
@@ -408,7 +408,7 @@ class PolygonM does Geometry {
     method type { $!type; }
     method TWEAK { $!num-rings = +@!rings; }
     method Str() { '(' ~ @!rings.map({.Str}).join('),(') ~ ')' };
-    method wkt() { "POLYGONM({self.Str})"; }
+    method wkt() { "PolygonM({self.Str})"; }
     method wkb(:$byteorder = wkbXDR) {
         my $endian = $byteorder == wkbXDR ?? LittleEndian !! BigEndian;
         my $b = Buf.new($byteorder);
@@ -426,7 +426,7 @@ class PolygonZM does Geometry {
     method type { $!type; }
     method TWEAK { $!num-rings = +@!rings; }
     method Str() { '(' ~ @!rings.map({.Str}).join('),(') ~ ')' };
-    method wkt() { "POLYGONZM({self.Str})"; }
+    method wkt() { "PolygonZM({self.Str})"; }
     method wkb(:$byteorder = wkbXDR) {
         my $endian = $byteorder == wkbXDR ?? LittleEndian !! BigEndian;
         my $b = Buf.new($byteorder);
@@ -444,7 +444,7 @@ class Triangle does Geometry {
     method type { $!type; }
     method TWEAK { $!num-rings = +@!rings; }
     method Str() { '(' ~ @!rings.map({.Str}).join('),(') ~ ')' };
-    method wkt() { "TRIANGLE({self.Str})"; }
+    method wkt() { "Triangle({self.Str})"; }
     method wkb(:$byteorder = wkbXDR) {
         my $endian = $byteorder == wkbXDR ?? LittleEndian !! BigEndian;
         my $b = Buf.new($byteorder);
@@ -462,7 +462,7 @@ class TriangleZ does Geometry {
     method type { $!type; }
     method TWEAK { $!num-rings = +@!rings; }
     method Str() { '(' ~ @!rings.map({.Str}).join('),(') ~ ')' };
-    method wkt() { "TRIANGLEZ({self.Str})"; }
+    method wkt() { "TriangleZ({self.Str})"; }
     method wkb(:$byteorder = wkbXDR) {
         my $endian = $byteorder == wkbXDR ?? LittleEndian !! BigEndian;
         my $b = Buf.new($byteorder);
@@ -480,7 +480,7 @@ class TriangleM does Geometry {
     method type { $!type; }
     method TWEAK { $!num-rings = +@!rings; }
     method Str() { '(' ~ @!rings.map({.Str}).join('),(') ~ ')' };
-    method wkt() { "TRIANGLEM({self.Str})"; }
+    method wkt() { "TriangleM({self.Str})"; }
     method wkb(:$byteorder = wkbXDR) {
         my $endian = $byteorder == wkbXDR ?? LittleEndian !! BigEndian;
         my $b = Buf.new($byteorder);
@@ -498,7 +498,7 @@ class TriangleZM does Geometry {
     method type { $!type; }
     method TWEAK { $!num-rings = +@!rings; }
     method Str() { '(' ~ @!rings.map({.Str}).join('),(') ~ ')' };
-    method wkt() { "TRIANGLEZM({self.Str})"; }
+    method wkt() { "TriangleZM({self.Str})"; }
     method wkb(:$byteorder = wkbXDR) {
         my $endian = $byteorder == wkbXDR ?? LittleEndian !! BigEndian;
         my $b = Buf.new($byteorder);
@@ -516,7 +516,7 @@ class PolyhedralSurface does Geometry {
     method type { $!type; }
     method TWEAK { $!num-polygons = +@!polygons; }
     method Str() { '(' ~ @!polygons.map({.Str}).join('),(') ~ ')' };
-    method wkt() { "POLYHEDRALSURFACE({self.Str})"; }
+    method wkt() { "PolyhedralSurface({self.Str})"; }
     method wkb(:$byteorder = wkbXDR) {
         my $endian = $byteorder == wkbXDR ?? LittleEndian !! BigEndian;
         my $b = Buf.new($byteorder);
@@ -535,7 +535,7 @@ class PolyhedralSurfaceZ does Geometry {
     method type { $!type; }
     method TWEAK { $!num-polygons = +@!polygons; }
     method Str() { '(' ~ @!polygons.map({.Str}).join('),(') ~ ')' };
-    method wkt() { "POLYHEDRALSURFACEZ({self.Str})"; }
+    method wkt() { "PolyhedralSurfaceZ({self.Str})"; }
     method wkb(:$byteorder = wkbXDR) {
         my $endian = $byteorder == wkbXDR ?? LittleEndian !! BigEndian;
         my $b = Buf.new($byteorder);
@@ -554,7 +554,7 @@ class PolyhedralSurfaceM does Geometry {
     method type { $!type; }
     method TWEAK { $!num-polygons = +@!polygons; }
     method Str() { '(' ~ @!polygons.map({.Str}).join('),(') ~ ')' };
-    method wkt() { "POLYHEDRALSURFACEM({self.Str})"; }
+    method wkt() { "PolyhedralSurfaceM({self.Str})"; }
     method wkb(:$byteorder = wkbXDR) {
         my $endian = $byteorder == wkbXDR ?? LittleEndian !! BigEndian;
         my $b = Buf.new($byteorder);
@@ -573,7 +573,7 @@ class PolyhedralSurfaceZM does Geometry {
     method type { $!type; }
     method TWEAK { $!num-polygons = +@!polygons; }
     method Str() { '(' ~ @!polygons.map({.Str}).join('),(') ~ ')' };
-    method wkt() { "POLYHEDRALSURFACEZM({self.Str})"; }
+    method wkt() { "PolyhedralSurfaceZM({self.Str})"; }
     method wkb(:$byteorder = wkbXDR) {
         my $endian = $byteorder == wkbXDR ?? LittleEndian !! BigEndian;
         my $b = Buf.new($byteorder);
@@ -666,7 +666,7 @@ class MultiPoint does Geometry {
     method type { $!type; }
     method TWEAK { $!num-points = +@!points; }
     method Str() { '(' ~ @!points.map({.Str}).join('),(') ~ ')' };
-    method wkt() { "MULTIPOINT({self.Str})"; }
+    method wkt() { "MultiPoint({self.Str})"; }
     method wkb(:$byteorder = wkbXDR) {
         my $endian = $byteorder == wkbXDR ?? LittleEndian !! BigEndian;
         my $b = Buf.new($byteorder);
@@ -692,7 +692,7 @@ class MultiPointZ does Geometry {
     method type { $!type; }
     method TWEAK { $!num-points = +@!points; }
     method Str() { @!points.map({.Str}).join(',') };
-    method wkt() { "MULTIPOINTZ({self.Str})"; }
+    method wkt() { "MultiPointZ({self.Str})"; }
     method wkb(:$byteorder = wkbXDR) {
         my $endian = $byteorder == wkbXDR ?? LittleEndian !! BigEndian;
         my $b = Buf.new($byteorder);
@@ -716,7 +716,7 @@ class MultiPointM does Geometry {
     method type { $!type; }
     method TWEAK { $!num-points = +@!points; }
     method Str() { @!points.map({.Str}).join(',') };
-    method wkt() { "MULTIPOINTM({self.Str})"; }
+    method wkt() { "MultiPointM({self.Str})"; }
     method wkb(:$byteorder = wkbXDR) {
         my $endian = $byteorder == wkbXDR ?? LittleEndian !! BigEndian;
         my $b = Buf.new($byteorder);
@@ -740,7 +740,7 @@ class MultiPointZM does Geometry {
     method type { $!type; }
     method TWEAK { $!num-points = +@!points; }
     method Str() { @!points.map({.Str}).join(',') };
-    method wkt() { "MULTIPOINTZM({self.Str})"; }
+    method wkt() { "MultiPointZM({self.Str})"; }
     method wkb(:$byteorder = wkbXDR) {
         my $endian = $byteorder == wkbXDR ?? LittleEndian !! BigEndian;
         my $b = Buf.new($byteorder);
@@ -934,7 +934,7 @@ class GeometryCollection does Geometry {
 
     method TWEAK { $!num-geometries = +@!geometries; }
     method Str { @!geometries.map({.wkt}).join(','); }
-    method wkt { 'GeeometryCollection(' ~ self.Str ~ ')'; }
+    method wkt { 'GeometryCollection(' ~ self.Str ~ ')'; }
     method tobuf($endian) {
         my $b = Buf.new(0);
         $b.write-uint32(0, $!num-geometries, $endian);
@@ -954,7 +954,7 @@ class GeometryCollectionZ does Geometry {
 
     method TWEAK { $!num-geometries = +@!geometries; }
     method Str { @!geometries.map({.wkt}).join(','); }
-    method wkt { 'GeeometryCollectionZ(' ~ self.Str ~ ')'; }
+    method wkt { 'GeometryCollectionZ(' ~ self.Str ~ ')'; }
     method tobuf($endian) {
         my $b = Buf.new(0);
         $b.write-uint32(0, $!num-geometries, $endian);
@@ -974,7 +974,7 @@ class GeometryCollectionM does Geometry {
 
     method TWEAK { $!num-geometries = +@!geometries; }
     method Str { @!geometries.map({.wkt}).join(','); }
-    method wkt { 'GeeometryCollectionM(' ~ self.Str ~ ')'; }
+    method wkt { 'GeometryCollectionM(' ~ self.Str ~ ')'; }
     method tobuf($endian) {
         my $b = Buf.new(0);
         $b.write-uint32(0, $!num-geometries, $endian);
@@ -994,7 +994,7 @@ class GeometryCollectionZM does Geometry {
 
     method TWEAK { $!num-geometries = +@!geometries; }
     method Str { @!geometries.map({.wkt}).join(','); }
-    method wkt { 'GeeometryCollectionZM(' ~ self.Str ~ ')'; }
+    method wkt { 'GeometryCollectionZM(' ~ self.Str ~ ')'; }
     method tobuf($endian) {
         my $b = Buf.new(0);
         $b.write-uint32(0, $!num-geometries, $endian);
