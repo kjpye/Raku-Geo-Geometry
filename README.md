@@ -102,7 +102,7 @@ PointM
 PointZM
 -------
 
-The `Point` class represents a single point geometry. It has two attributes, `x` and `y`, each of which isconstrained to be a 64-bit floating point number (`num`).
+The `Point` class represents a single point geometry. It has two attributes, `x` and `y`, each of which is constrained to be a 64-bit floating point number (`num`).
 
 The `PointZ` class also contains a third attribute `z` to represent a third dimension.
 
@@ -113,6 +113,8 @@ The `PointMZ` class combines the `z` attribute of `PointZ` and the `m` attribute
 An object of each class may be constructed either by using named parameters (`Point.new(x => 10, y => 12)`, or by using positional parameters (`PointZ.new(1,2,3)`). When positional parameters are used, the ordering of the parameters is `x`, `y`, `z`, `m`; omitting those parameters which are not appropriate for the object type.
 
 All the parameters of a point geometry are required. `NaN` might be used if an `m` parameter for example were not required.
+
+Accessor methodes are available for the `x`, `y`, `z` and `m`.
 
 LineString
 ----------
@@ -134,6 +136,8 @@ An object in the LineString family is created by passing an array of the appropr
 
 At the moment there is no way of accessing the contents of a LineString geometry other than using the standard methods.
 
+An accessor method `points` will give the constituent points.
+
 LinearRing
 ----------
 
@@ -152,6 +156,8 @@ A linear ring is similar to a line string, but is closed; i.e. the last point sh
 
 Each of these classes has a `winding` method. This determines whether the linear ring is clockwise (a positive number is returned) or anti-clockwise (a negative number is returned). This method will be unreliable unless the linear ring actually is a simple closed loop. The winding method ignores everything except the `x` and `y` attributes.
 
+An accessor method `points` will give the constituent points.
+
 Polygon
 -------
 
@@ -168,6 +174,8 @@ A `Polygon` consists of one or more `LinearRings`. In general, the first linear 
 
 A `Polygon` is created using an array of rings, such as `Polygon.new(rings => @rings)`.
 
+An accessor method `rings` will give the constituent rings.
+
 `PolygonZ`, `PolygonM` and `PolygonZM` behave similarly.
 
 Triangle
@@ -183,6 +191,8 @@ TriangleZM
 ----------
 
 A triangle is a polygon where the outer ring has exactly four points, the fourth being the same as the first and otherwise having no oints in common. The points must not be in a straight line. No internal rings are permitted.
+
+An accessor method `rings` gives the constituent rings.
 
 PolyhedralSurface
 -----------------

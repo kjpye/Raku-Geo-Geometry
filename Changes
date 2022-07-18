@@ -1,6 +1,8 @@
 Revision history for Geo::Geometry
 
 {{$NEXT}}
+
+0.0.2  2022-07-18T19:47:05+10:00
 	- Allow access to components
 
 0.0.1  2022-05-18T16:51:01+10:00
