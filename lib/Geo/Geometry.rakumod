@@ -148,8 +148,8 @@ class PointZM does Geometry {
 
 class LineString does Geometry {
     has $!type = wkbLineString;
-    has $!num-points;
-    has Point @!points is required is built;
+    has $.num-points;
+    has Point @.points is required is built;
 
     method type { $!type; }
     method TWEAK { $!num-points = +@!points; }
@@ -175,8 +175,8 @@ class LineString does Geometry {
 
 class LineStringZ does Geometry {
     has $!type = wkbLineStringZ;
-    has $!num-points;
-    has PointZ @!points is required is built;
+    has $.num-points;
+    has PointZ @.points is required is built;
 
     method type { $!type; }
     method TWEAK { $!num-points = +@!points; }
@@ -203,8 +203,8 @@ class LineStringZ does Geometry {
 
 class LineStringM does Geometry {
     has $!type = wkbLineStringM;
-    has $!num-points;
-    has PointM @!points is required is built;
+    has $.num-points;
+    has PointM @.points is required is built;
 
     method type { $!type; }
     method TWEAK { $!num-points = +@!points; }
@@ -231,8 +231,8 @@ class LineStringM does Geometry {
 
 class LineStringZM does Geometry {
     has $!type = wkbLineStringZM;
-    has $!num-points;
-    has PointZM @!points is required is built;
+    has $.num-points;
+    has PointZM @.points is required is built;
 
     method type { $!type; }
     method TWEAK { $!num-points = +@!points; }
@@ -275,8 +275,8 @@ class LineStringZM does Geometry {
     }
     
 class LinearRing does Geometry {
-    has $!num-points;
-    has Point @!points is required is built;
+    has $.num-points;
+    has Point @.points is required is built;
 
 # TWEAK should check that the linear ring is simple and closed
     method TWEAK { $!num-points = +@!points ; }
@@ -297,8 +297,8 @@ class LinearRing does Geometry {
 }
 
 class LinearRingZ does Geometry {
-    has $!num-points;
-    has PointZ @!points is required is built;
+    has $.num-points;
+    has PointZ @.points is required is built;
 
     method TWEAK { $!num-points = +@!points ; }
     method Str() { @!points.map({.Str}).join(',') };
@@ -320,8 +320,8 @@ class LinearRingZ does Geometry {
 }
 
 class LinearRingM does Geometry {
-    has $!num-points;
-    has PointM @!points is required is built;
+    has $.num-points;
+    has PointM @.points is required is built;
 
     method TWEAK { $!num-points = +@!points ; }
     method Str() { @!points.map({.Str}).join(',') };
@@ -342,8 +342,8 @@ class LinearRingM does Geometry {
 }
 
 class LinearRingZM does Geometry {
-    has $!num-points;
-    has PointZM @!points is required is built;
+    has $.num-points;
+    has PointZM @.points is required is built;
 
     method TWEAK { $!num-points = +@!points ; }
     method Str() { @!points.map({.Str}).join(',') };
@@ -366,8 +366,8 @@ class LinearRingZM does Geometry {
 
 class Polygon does Geometry {
     has $!type = wkbPolygon;
-    has $!num-rings;
-    has LinearRing @!rings is required is built;
+    has $.num-rings;
+    has LinearRing @.rings is required is built;
 
     method type { $!type; }
     method TWEAK { $!num-rings = +@!rings; }
@@ -384,8 +384,8 @@ class Polygon does Geometry {
 
 class PolygonZ does Geometry {
     has $!type = wkbPolygonZ;
-    has $!num-rings;
-    has LinearRingZ @!rings is required is built;
+    has $.num-rings;
+    has LinearRingZ @.rings is required is built;
 
     method type { $!type; }
     method TWEAK { $!num-rings = +@!rings; }
@@ -402,8 +402,8 @@ class PolygonZ does Geometry {
 
 class PolygonM does Geometry {
     has $!type = wkbPolygonM;
-    has $!num-rings;
-    has LinearRingM @!rings is required is built;
+    has $.num-rings;
+    has LinearRingM @.rings is required is built;
 
     method type { $!type; }
     method TWEAK { $!num-rings = +@!rings; }
@@ -420,8 +420,8 @@ class PolygonM does Geometry {
 
 class PolygonZM does Geometry {
     has $!type = wkbPolygonZM;
-    has $!num-rings;
-    has LinearRingZM @!rings is required is built;
+    has $.num-rings;
+    has LinearRingZM @.rings is required is built;
 
     method type { $!type; }
     method TWEAK { $!num-rings = +@!rings; }
@@ -438,8 +438,8 @@ class PolygonZM does Geometry {
 
 class Triangle does Geometry {
     has $!type = wkbTriangle;
-    has $!num-rings;
-    has LinearRing @!rings is required is built;
+    has $.num-rings;
+    has LinearRing @.rings is required is built;
 
     method type { $!type; }
     method TWEAK { $!num-rings = +@!rings; }
@@ -456,8 +456,8 @@ class Triangle does Geometry {
 
 class TriangleZ does Geometry {
     has $!type = wkbTriangleZ;
-    has $!num-rings;
-    has LinearRingZ @!rings is required is built;
+    has $.num-rings;
+    has LinearRingZ @.rings is required is built;
 
     method type { $!type; }
     method TWEAK { $!num-rings = +@!rings; }
@@ -474,8 +474,8 @@ class TriangleZ does Geometry {
 
 class TriangleM does Geometry {
     has $!type = wkbTriangleM;
-    has $!num-rings;
-    has LinearRingM @!rings is required is built;
+    has $.num-rings;
+    has LinearRingM @.rings is required is built;
 
     method type { $!type; }
     method TWEAK { $!num-rings = +@!rings; }
@@ -492,8 +492,8 @@ class TriangleM does Geometry {
 
 class TriangleZM does Geometry {
     has $!type = wkbTriangleZM;
-    has $!num-rings;
-    has LinearRingZM @!rings is required is built;
+    has $.num-rings;
+    has LinearRingZM @.rings is required is built;
 
     method type { $!type; }
     method TWEAK { $!num-rings = +@!rings; }
@@ -510,8 +510,8 @@ class TriangleZM does Geometry {
 
 class PolyhedralSurface does Geometry {
     has $!type = wkbPolyhedralSurface;
-    has $!num-polygons;
-    has Polygon @!polygons is required is built;
+    has $.num-polygons;
+    has Polygon @.polygons is required is built;
 
     method type { $!type; }
     method TWEAK { $!num-polygons = +@!polygons; }
@@ -529,8 +529,8 @@ class PolyhedralSurface does Geometry {
 
 class PolyhedralSurfaceZ does Geometry {
     has $!type = wkbPolyhedralSurfaceZ;
-    has $!num-polygons;
-    has PolygonZ @!polygons is required is built;
+    has $.num-polygons;
+    has PolygonZ @.polygons is required is built;
 
     method type { $!type; }
     method TWEAK { $!num-polygons = +@!polygons; }
@@ -548,8 +548,8 @@ class PolyhedralSurfaceZ does Geometry {
 
 class PolyhedralSurfaceM does Geometry {
     has $!type = wkbPolyhedralSurfaceM;
-    has $!num-polygons;
-    has PolygonM @!polygons is required is built;
+    has $.num-polygons;
+    has PolygonM @.polygons is required is built;
 
     method type { $!type; }
     method TWEAK { $!num-polygons = +@!polygons; }
@@ -567,8 +567,8 @@ class PolyhedralSurfaceM does Geometry {
 
 class PolyhedralSurfaceZM does Geometry {
     has $!type = wkbPolyhedralSurfaceZM;
-    has $!num-polygons;
-    has PolygonZM @!polygons is required is built;
+    has $.num-polygons;
+    has PolygonZM @.polygons is required is built;
 
     method type { $!type; }
     method TWEAK { $!num-polygons = +@!polygons; }
@@ -585,8 +585,8 @@ class PolyhedralSurfaceZM does Geometry {
 
 class TIN does Geometry {
     has $!type = wkbTIN;
-    has $!num-polygons;
-    has Polygon @!polygons is required is built;
+    has $.num-polygons;
+    has Polygon @.polygons is required is built;
 
     method type { $!type; }
     method TWEAK { $!num-polygons = +@!polygons; }
@@ -604,8 +604,8 @@ class TIN does Geometry {
 
 class TINZ does Geometry {
     has $!type = wkbTINZ;
-    has $!num-polygons;
-    has PolygonZ @!polygons is required is built;
+    has $.num-polygons;
+    has PolygonZ @.polygons is required is built;
 
     method type { $!type; }
     method TWEAK { $!num-polygons = +@!polygons; }
@@ -623,8 +623,8 @@ class TINZ does Geometry {
 
 class TINM does Geometry {
     has $!type = wkbTINM;
-    has $!num-polygons;
-    has PolygonM @!polygons is required is built;
+    has $.num-polygons;
+    has PolygonM @.polygons is required is built;
 
     method type { $!type; }
     method TWEAK { $!num-polygons = +@!polygons; }
@@ -642,8 +642,8 @@ class TINM does Geometry {
 
 class TINZM does Geometry {
     has $!type = wkbTINZM;
-    has $!num-polygons;
-    has PolygonZM @!polygons is required is built;
+    has $.num-polygons;
+    has PolygonZM @.polygons is required is built;
 
     method type { $!type; }
     method TWEAK { $!num-polygons = +@!polygons; }
@@ -660,8 +660,8 @@ class TINZM does Geometry {
 
 class MultiPoint does Geometry {
     has $!type = wkbMultiPoint;
-    has $!num-points;
-    has Point @!points is required is built;
+    has $.num-points;
+    has Point @.points is required is built;
 
     method type { $!type; }
     method TWEAK { $!num-points = +@!points; }
@@ -686,8 +686,8 @@ class MultiPoint does Geometry {
     
 class MultiPointZ does Geometry {
     has $!type = wkbMultiPointZ;
-    has $!num-points;
-    has PointZ @!points is required is built;
+    has $.num-points;
+    has PointZ @.points is required is built;
 
     method type { $!type; }
     method TWEAK { $!num-points = +@!points; }
@@ -710,8 +710,8 @@ class MultiPointZ does Geometry {
     
 class MultiPointM does Geometry {
     has $!type = wkbMultiPointM;
-    has $!num-points;
-    has PointM @!points is required is built;
+    has $.num-points;
+    has PointM @.points is required is built;
 
     method type { $!type; }
     method TWEAK { $!num-points = +@!points; }
@@ -734,8 +734,8 @@ class MultiPointM does Geometry {
     
 class MultiPointZM does Geometry {
     has $!type = wkbMultiPointZM;
-    has $!num-points;
-    has PointZM @!points is required is built;
+    has $.num-points;
+    has PointZM @.points is required is built;
 
     method type { $!type; }
     method TWEAK { $!num-points = +@!points; }
@@ -758,8 +758,8 @@ class MultiPointZM does Geometry {
 
 class MultiLineString does Geometry {
     has $!type = wkbMultiLineString;
-    has $!num-linestrings;
-    has LineString @!linestrings is required is built;
+    has $.num-linestrings;
+    has LineString @.linestrings is required is built;
 
     method type { $!type; }
     method TWEAK { $!num-linestrings = +@!linestrings; }
@@ -781,8 +781,8 @@ class MultiLineString does Geometry {
 
 class MultiLineStringZ does Geometry {
     has $!type = wkbMultiLineStringZ;
-    has $!num-linestrings;
-    has LineStringZ @!linestrings is required is built;
+    has $.num-linestrings;
+    has LineStringZ @.linestrings is required is built;
 
     method type { $!type; }
     method TWEAK { $!num-linestrings = +@!linestrings; }
@@ -802,8 +802,8 @@ class MultiLineStringZ does Geometry {
 
 class MultiLineStringM does Geometry {
     has $!type = wkbMultiLineStringM;
-    has $!num-linestrings;
-    has LineStringM @!linestrings is required is built;
+    has $.num-linestrings;
+    has LineStringM @.linestrings is required is built;
 
     method type { $!type; }
     method TWEAK { $!num-linestrings = +@!linestrings; }
@@ -823,8 +823,8 @@ class MultiLineStringM does Geometry {
 
 class MultiLineStringZM does Geometry {
     has $!type = wkbMultiLineStringZM;
-    has $!num-linestrings;
-    has LineStringZM @!linestrings is required is built;
+    has $.num-linestrings;
+    has LineStringZM @.linestrings is required is built;
 
     method type { $!type; }
     method TWEAK { $!num-linestrings = +@!linestrings; }
@@ -844,8 +844,8 @@ class MultiLineStringZM does Geometry {
 
 class MultiPolygon does Geometry {
     has $!type = wkbMultiPolygon;
-    has $!num-polygons;
-    has Polygon @!polygons is required is built;
+    has $.num-polygons;
+    has Polygon @.polygons is required is built;
 
     method type { $!type; }
     method TWEAK { $!num-polygons = +@!polygons; }
@@ -867,8 +867,8 @@ class MultiPolygon does Geometry {
 
 class MultiPolygonZ does Geometry {
     has $!type = wkbMultiPolygonZ;
-    has $!num-polygons;
-    has PolygonZ @!polygons is required is built;
+    has $.num-polygons;
+    has PolygonZ @.polygons is required is built;
 
     method type { $!type; }
     method TWEAK { $!num-polygons = +@!polygons; }
@@ -888,8 +888,8 @@ class MultiPolygonZ does Geometry {
 
 class MultiPolygonM does Geometry {
     has $!type = wkbMultiPolygonM;
-    has $!num-polygons;
-    has PolygonM @!polygons is required is built;
+    has $.num-polygons;
+    has PolygonM @.polygons is required is built;
 
     method type { $!type; }
     method TWEAK { $!num-polygons = +@!polygons; }
@@ -909,8 +909,8 @@ class MultiPolygonM does Geometry {
 
 class MultiPolygonZM does Geometry {
     has $!type = wkbMultiPolygonZM;
-    has $!num-polygons;
-    has PolygonZM @!polygons is required is built;
+    has $.num-polygons;
+    has PolygonZM @.polygons is required is built;
 
     method type { $!type; }
     method TWEAK { $!num-polygons = +@!polygons; }
@@ -929,8 +929,8 @@ class MultiPolygonZM does Geometry {
 }
 
 class GeometryCollection does Geometry {
-    has $!num-geometries;
-    has Geometry @!geometries is required is built;
+    has $.num-geometries;
+    has Geometry @.geometries is required is built;
 
     method TWEAK { $!num-geometries = +@!geometries; }
     method Str { @!geometries.map({.wkt}).join(','); }
@@ -949,8 +949,8 @@ class GeometryCollection does Geometry {
 }
 
 class GeometryCollectionZ does Geometry {
-    has $!num-geometries;
-    has Geometry @!geometries is required is built;
+    has $.num-geometries;
+    has Geometry @.geometries is required is built;
 
     method TWEAK { $!num-geometries = +@!geometries; }
     method Str { @!geometries.map({.wkt}).join(','); }
@@ -969,8 +969,8 @@ class GeometryCollectionZ does Geometry {
 }
 
 class GeometryCollectionM does Geometry {
-    has $!num-geometries;
-    has Geometry @!geometries is required is built;
+    has $.num-geometries;
+    has Geometry @.geometries is required is built;
 
     method TWEAK { $!num-geometries = +@!geometries; }
     method Str { @!geometries.map({.wkt}).join(','); }
@@ -989,8 +989,8 @@ class GeometryCollectionM does Geometry {
 }
 
 class GeometryCollectionZM does Geometry {
-    has $!num-geometries;
-    has Geometry @!geometries is required is built;
+    has $.num-geometries;
+    has Geometry @.geometries is required is built;
 
     method TWEAK { $!num-geometries = +@!geometries; }
     method Str { @!geometries.map({.wkt}).join(','); }
