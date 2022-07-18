@@ -1857,7 +1857,8 @@ can be useful.
 =head2 PointZM
 
 The C<Point> class represents a single point geometry.
-It has two attributes, C<x> and C<y>, each of which isconstrained to be a 64-bit floating point number (C<num>).
+It has two attributes, C<x> and C<y>, each of which is
+constrained to be a 64-bit floating point number (C<num>).
 
 The C<PointZ> class also contains a third attribute C<z>
 to represent a third dimension.
@@ -1881,6 +1882,8 @@ All the parameters of a point geometry are required.
 C<NaN> might be used if an C<m> parameter for example
 were not required.
 
+Accessor methodes are available for the C<x>, C<y>, C<z> and C<m>.
+
 =head2 LineString
 =head2 LineStringZ
 =head2 LineStringM
@@ -1898,6 +1901,8 @@ to the named argument C<points>.
 
 At the moment there is no way of accessing the contents
 of a LineString geometry other than using the standard methods.
+
+An accessor method C<points> will give the constituent points.
 
 =head2 LinearRing
 =head2 LinearRingZ
@@ -1925,6 +1930,8 @@ actually is a simple closed loop.
 The winding method ignores everything except the
 C<x> and C<y> attributes.
 
+An accessor method C<points> will give the constituent points.
+
 =head2 Polygon
 =head2 PolygonZ
 =head2 PolygonM
@@ -1933,6 +1940,8 @@ C<x> and C<y> attributes.
 A C<Polygon> consists of one or more C<LinearRings>. In general, the first linear ring should be clockwise (with a positive winding number). The other linear rings should be fully enclosed within the first and be disjoint from each other. They should have a negative winding number. These rings represent a polygon (the first ring) and holes within that polygon, represented by the other rings. Having only a single ring specified is acceptable (and normal under most circumstances), representing a polygon without holes.
 
 A C<Polygon> is created using an array of rings, such as C<<Polygon.new(rings => @rings)>>.
+
+An accessor method C<rings> will give the constituent rings.
 
 C<PolygonZ>, C<PolygonM> and C<PolygonZM> behave similarly.
 
@@ -1944,6 +1953,8 @@ C<PolygonZ>, C<PolygonM> and C<PolygonZM> behave similarly.
 A triangle is a polygon where the outer ring has exactly four points,
 the fourth being the same as the first and otherwise having no oints in common.
 The points must not be in a straight line. No internal rings are permitted.
+
+An accessor method C<rings> gives the constituent rings.
 
 =head2 PolyhedralSurface
 =head2 PolyhedralSurfaceZ
