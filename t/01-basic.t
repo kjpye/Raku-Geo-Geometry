@@ -80,9 +80,14 @@ my @examples = (
     'MultiPolygon(((10 10,10 20,20 20,20 15,10 10)),((60 60,70 70,80 60,60 60)))',
     'MultiLineString((10 10,20 20),(15 15,30 15))',
     'GeometryCollection(Point(10 10),Point(30 30),LineString(15 15,20 20))',
+# FROM UK OS:
+    'LineStringm(4 1 0,4 1 0)',
+    'LineStringZM(4 1 0 1,4 1 3 4)',
+#    'MULTILINESTRING ZM ((464759.47000000003 1212349.74 0 -1.797693134862316e+308,464816.08 1212360.29 0 -1.797693134862316e+308))',
 );
 
 for @examples -> $ex {
     my $wkt = WKT.parse($ex).made;
+    dd $wkt;
     is $ex, $wkt.wkt, 'roundtrip';
 }

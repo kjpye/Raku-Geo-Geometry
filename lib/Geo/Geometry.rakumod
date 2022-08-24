@@ -1,5 +1,4 @@
-# use Grammar::Debugger;
-
+use Grammar::Tracer;
 enum WKBByteOrder (
     wkbXDR => 0,
     wkbNDR => 1,
@@ -55,8 +54,8 @@ role Geometry {
 }
 
 class Point does Geometry {
-    has num $.x is required;
-    has num $.y is required;
+    has num $.x is required is built;
+    has num $.y is required is built;
 
     method type { wkbPoint };
     multi method new($x, $y) { self.bless(x => $x.Num, y => $y.Num) }
@@ -76,9 +75,9 @@ class Point does Geometry {
 }
 
 class PointZ does Geometry {
-    has num $.x is required;
-    has num $.y is required;
-    has num $.z is required;
+    has num $.x is required is built;
+    has num $.y is required is built;
+    has num $.z is required is built;
 
     method type { wkbPointZ }
     multi method new($x, $y, $z) { self.bless(x => $x.Num, y => $y.Num, z => $z.Num) }
@@ -99,12 +98,12 @@ class PointZ does Geometry {
 }
 
 class PointM does Geometry {
-    has num $.x is required;
-    has num $.y is required;
-    has num $.m is required;
+    has num $.x is required is built;
+    has num $.y is required is built;
+    has num $.m is required is built;
     
     method type { wkbPointM }
-    multi method new($x, $y, $m) { self.bless(x => $x.Num, y => $y.Num, m => $m.Num) }
+    multi method new($x, $y, $m) { dd $m; dd $m.Num; self.bless(x => $x.Num, y => $y.Num, m => $m.Num) }
     method Str() { "{$!x} {$!y} {$!m}" }
     method wkt() { "PointM({self.Str})"; }
     method tobuf($endian) {
@@ -122,10 +121,10 @@ class PointM does Geometry {
 }
 
 class PointZM does Geometry {
-    has num $.x is required;
-    has num $.y is required;
-    has num $.z is required;
-    has num $.m is required;
+    has num $.x is required is built;
+    has num $.y is required is built;
+    has num $.z is required is built;
+    has num $.m is required is built;
     
     method type { wkbPointZM }
     multi method new($x, $y, $z, $m) { self.bless(x => $x.Num, y => $y.Num, z => $z.Num, m => $m.Num) }
@@ -828,6 +827,8 @@ class MultiLineStringZM does Geometry {
 
     method type { $!type; }
     method TWEAK { $!num-linestrings = +@!linestrings; }
+    method Str { '(' ~ @!linestrings.map({.Str}).join('),(') ~ ')'; }
+    method wkt { 'MultiLineStringZM(' ~ self.Str ~ ')'; }
     method tobuf($endian) {
         my $b = Buf.new(0);
         $b.write-uint32(0, $!num-linestrings, $endian);
@@ -1016,32 +1017,30 @@ grammar WKT {
         | <geometryzm-tagged-text> { make $<geometryzm-tagged-text>.made; }
     }
     regex value                          { <signed-numeric-literal> { make $<signed-numeric-literal>.made; } }
-    token quoted-name                    { '"' <name> '"' }
-    token name                           { <letter>* }
-    token letter                         { <[a..z A..Z]> | \d | <[\(\)\-\_\.\'\ ]> }
     token sign                           {       { make  1; }
                                            | '+' { make  1; }
                                            | '-' { make -1; }
                                          }
-    regex signed-numeric-literal         { <sign> <unsigned-numeric-literal> { make $<sign>.made * $<unsigned-numeric-literal>.made; } }
-    regex unsigned-numeric-literal       {
-                                           | <exact-numeric-literal>       { make $<exact-numeric-literal>.made;       }
-                                           | <approximate-numeric-literal> { make $<approximate-numeric-literal>.made; }
+    token signed-numeric-literal         { <sign> <unsigned-numeric-literal> { make $<sign>.made * $<unsigned-numeric-literal>.made; } }
+    token unsigned-numeric-literal       { <approximate-numeric-literal> { make $<approximate-numeric-literal>.made; } }
+    token exponent {
+                     |                                  { make 1;                                               }
+                     | :i 'e' <sign> <unsigned-integer> { make 10e0 ** ($<sign>.made × $<unsigned-integer>.made); }
+                   }
+    token approximate-numeric-literal    { <exact-numeric-literal> <exponent>
+                                              { make $<exact-numeric-literal>.made × $<exponent>.made; }
                                          }
-    regex approximate-numeric-literal    { :i <exact-numeric-literal> 'e' <sign> <unsigned-integer>
-                                              { make $<exact-numeric-literal>.made * 10e0 ** ($<sign> * $<unsigned-integer>.made); }
-                                         }
-    regex exact-numeric-literal          {
+    token exact-numeric-literal          {
                                            | <unsigned-integer> [ <decimal-point> <unsigned-integer>? ]?
                                              {
                                                  if $<unsigned-integer>[1].defined {
                                                      make $<unsigned-integer>[0] +
-                                                     $<unsigned-integer>[1] / 10 ** ($<unsigned-integer>[1].pos - $<unsigned-integer>[1].from);
+                                                     $<unsigned-integer>[1] ÷ 10 ** ($<unsigned-integer>[1].pos - $<unsigned-integer>[1].from);
                                                  } else {
                                                      make $<unsigned-integer>[0];
                                                  }
                                              }
-                                           | <decimal-point> <unsigned-integer> { make 1e0/10**($<unsigned-integer>.pos - $<unsigned-integer>.from); }
+                                           | <decimal-point> <unsigned-integer> { make 1e0 ÷ 10**($<unsigned-integer>.pos - $<unsigned-integer>.from); }
                                          }
     token signed-integer                 { <sign> <unsigned-integer> { make $<sign>.made * $<unsigned-integer>.made; } }
     token unsigned-integer               { (\d+) { make +$0; } }
@@ -1049,237 +1048,273 @@ grammar WKT {
     token decimal-point                  { '.' }
     token empty-set                      { "EMPTY" }
 
-    rule point { <value> <value> { make Point.new($<value>[0], $<value>[1]); } }
+# The non-Z or Μ variants
+    
+    rule point { <value> <value> { make Point.new(x => $<value>[0].made.Num,
+                                                  y => $<value>[1].made.Num,
+                                                 ); } }
     rule geometry-tagged-text {
-                                  | <point-tagged-text>              { make $<point-tagged-text>.made;              }
-                                  | <linestring-tagged-text>         { make $<linestring-tagged-text>.made;         }
-                                  | <polygon-tagged-text>            { make $<polygon-tagged-text>.made;            }
-                                  | <triangle-tagged-text>           { make $<triangle-tagged-text>.made;           }
-                                  | <polyhedralsurface-tagged-text>  { make $<polyhedralsurface-tagged-text>.made;  }
-                                  | <tin-tagged-text>                { make $<tin-tagged-text>.made;                }
-                                  | <multipoint-tagged-text>         { make $<multipoint-tagged-text>.made;         }
-                                  | <multilinestring-tagged-text>    { make $<multilinestring-tagged-text>.made;    }
-                                  | <multipolygon-tagged-text>       { make $<multipolygon-tagged-text>.made;       }
-                                  | <geometrycollection-tagged-text> { make $<geometrycollection-tagged-text>.made; }
+        | <point-tagged-text>              { make $<point-tagged-text>.made;              }
+        | <linestring-tagged-text>         { make $<linestring-tagged-text>.made;         }
+        | <polygon-tagged-text>            { make $<polygon-tagged-text>.made;            }
+        | <triangle-tagged-text>           { make $<triangle-tagged-text>.made;           }
+        | <polyhedralsurface-tagged-text>  { make $<polyhedralsurface-tagged-text>.made;  }
+        | <tin-tagged-text>                { make $<tin-tagged-text>.made;                }
+        | <multipoint-tagged-text>         { make $<multipoint-tagged-text>.made;         }
+        | <multilinestring-tagged-text>    { make $<multilinestring-tagged-text>.made;    }
+        | <multipolygon-tagged-text>       { make $<multipolygon-tagged-text>.made;       }
+        | <geometrycollection-tagged-text> { make $<geometrycollection-tagged-text>.made; }
     }
-    rule point-tagged-text              { :i "point"              <point-text>              { make $<point-text>.made;              } }
-    rule linestring-tagged-text         { :i "linestring"         <linestring-text>         { make $<linestring-text>.made;         } }
-    rule polygon-tagged-text            { :i "polygon"            <polygon-text>            { make $<polygon-text>.made;            } }
-    rule triangle-tagged-text           { :i "triangle"           <triangle-text>           { make $<triangle-text>.made;           } }
-    rule polyhedralsurface-tagged-text  { :i "polyhedralsurface"  <polyhedralsurface-text>  { make $<polyhedralsurface-text>.made;  } }
-    rule tin-tagged-text                { :i "tin"                <tin-text>                { make $<tin-text>.made;                } }
-    rule multipoint-tagged-text         { :i "multipoint"         <multipoint-text>         { make $<multipoint-text>.made;         } }
-    rule multilinestring-tagged-text    { :i "multilinestring"    <multilinestring-text>    { make $<multilinestring-text>.made;    } }
-    rule multipolygon-tagged-text       { :i "multipolygon"       <multipolygon-text>       { make $<multipolygon-text>.made;       } }
-    rule geometrycollection-tagged-text { :i "geometrycollection" <geometrycollection-text> { make $<geometrycollection-text>.made; } }
+    
+    token point-tagged-text              { :s:i "point"              <.ws>? <point-text>              { make $<point-text>.made;              } }
+    token linestring-tagged-text         { :s:i "linestring"         <.ws>? <linestring-text>         { make $<linestring-text>.made;         } }
+    token polygon-tagged-text            { :s:i "polygon"            <.ws>? <polygon-text>            { make $<polygon-text>.made;            } }
+    token triangle-tagged-text           { :s:i "triangle"           <.ws>? <triangle-text>           { make $<triangle-text>.made;           } }
+    token polyhedralsurface-tagged-text  { :s:i "polyhedralsurface"  <.ws>? <polyhedralsurface-text>  { make $<polyhedralsurface-text>.made;  } }
+    token tin-tagged-text                { :s:i "tin"                <.ws>? <tin-text>                { make $<tin-text>.made;                } }
+    token multipoint-tagged-text         { :s:i "multipoint"         <.ws>? <multipoint-text>         { make $<multipoint-text>.made;         } }
+    token multilinestring-tagged-text    { :s:i "multilinestring"    <.ws>? <multilinestring-text>    { make $<multilinestring-text>.made;    } }
+    token multipolygon-tagged-text       { :s:i "multipolygon"       <.ws>? <multipolygon-text>       { make $<multipolygon-text>.made;       } }
+    token geometrycollection-tagged-text { :s:i "geometrycollection" <.ws>? <geometrycollection-text> { make $<geometrycollection-text>.made; } }
 
-    rule point-text { <empty-set>
-                    |  '(' <point> ')' { make $<point>.made; }
-                    |  '[' <point> ']' { make $<point>.made; }
-                    }
-    rule linestring-text {:s
-                           | <empty-set>
-                           | '(' <point>+ % ',' ')' { make LineString.new(points => $<point>.map: {.made}); }
-                           | '[' <point>+ % ',' ']' { make LineString.new(points => $<point>.map: {.made}); }
-                         }
+    rule point-text { | <empty-set>
+                        | '(' <point> ')' { make $<point>.made; }
+                        | '[' <point> ']' { make $<point>.made; }
+                      }
+    rule linestring-text { | <empty-set>
+                             | '(' <point>+ % ',' ')' { make LineString.new(points => $<point>.map({.made})); }
+                             | '[' <point>+ % ',' ']' { make LineString.new(points => $<point>.map({.made})); }
+                           }
     rule linearring-text { | <empty-set>
-                           | '(' <point>+ % ',' ')' { make LinearRing.new(points => $<point>.map: {.made}); }
-                           | '[' <point>+ % ',' ']' { make LinearRing.new(points => $<point>.map: {.made}); }
-                         }
+                             | '(' <point>+ % ',' ')' { make LinearRing.new(points => $<point>.map({.made})); }
+                             | '[' <point>+ % ',' ']' { make LinearRing.new(points => $<point>.map({.made})); }
+                           }
     rule polygon-text { | <empty-set>
-                        | '(' <linearring-text>+ % ',' ')' { make Polygon.new(rings => $<linearring-text>.map: {.made}); }
-                        | '[' <linearring-text>+ % ',' ']' { make Polygon.new(rings => $<linearring-text>.map: {.made}); }
-                      }
+                          | '(' <linearring-text>+ % ',' ')' { make Polygon.new(rings => $<linearring>.map({.made})); }
+                          | '[' <linearring-text>+ % ',' ']' { make Polygon.new(rings => $<linearring>.map({.made})); }
+                        }
     rule polyhedralsurface-text { | <empty-set>
-                                  | '(' <polygon-text>+ % ',' ')' { make PolyhedralSurface.New(polygons => $<polygon-text>.map: {.made}); }
-                                  | '[' <polygon-text>+ % ',' ']' { make PolyhedralSurface.New(polygons => $<polygon-text>.map: {.made}); }
-                                }
+                                    | '(' <polygon-text>+ % ',' ')' { make PolyhedralSurface.new(polygons => $<polygon-text>.map({.made})); }
+                                    | '[' <polygon-text>+ % ',' ']' { make PolyhedralSurface.new(polygons => $<polygon-text>.map({.made})); }
+
+                                  }
     rule multipoint-text { | <empty-set>
-                           | '(' <point-text>+ % ',' ')' { make MultiPoint.new(points => $<point-text>.map: {.made}); }
-                           | '[' <point-text>+ % ',' ']' { make MultiPoint.new(points => $<point-text>.map: {.made}); }
-                         }
+                             | '(' <point-text>+ % ',' ')' { make MultiPoint.new(points => $<point-text>.map({.made})); }
+                             | '[' <point-text>+ % ',' ']' { make MultiPoint.new(points => $<point-text>.map({.made})); }
+                           }
     rule multilinestring-text { | <empty-set>
-                                | '(' <linestring-text>+ % ',' ')' { make MultiLineString.new(linestrings => $<linestring-text>.map: {.made}); }
-                                | '[' <linestring-text>+ % ',' ']' { make MultiLineString.new(linestrings => $<linestring-text>.map: {.made}); }
-                              }
+                                  | '(' <linestring-text>+ % ',' ')' { make MultiLineString.new(linestrings => $<linestring-text>.map({.made})); }
+                                  | '[' <linestring-text>+ % ',' ']' { make MultiLineString.new(linestrings => $<linestring-text>.map({.made})); }
+                                }
     rule multipolygon-text { | <empty-set>
-                             | '(' <polygon-text>+ % ',' ')' { make MultiPolygon.new(polygons => $<polygon-text>.map: {.made}); }
-                             | '[' <polygon-text>+ % ',' ']' { make MultiPolygon.new(polygons => $<polygon-text>.map: {.made}); }
-                           }
+                               | '(' <multipolygon-text>+ % ',' ')' { make MultiPolygon.new(polygons => $<multipolygon-text>.map({.made})); }
+                               | '[' <multipolygon-text>+ % ',' ']' { make MultiPolygon.new(polygons => $<multipolygon-text>.map({.made})); }
+                             }
     rule geometrycollection-text { | <empty-set>
-                                   | '(' <geometry-tagged-text>+ % ',' ')' { make GeometryCollection.new(geometries => $<geometry-tagged-text>.map: {.made}); }
-                                   | '[' <geometry-tagged-text>+ % ',' ']' { make GeometryCollection.new(geometries => $<geometry-tagged-text>.map: {.made}); }
+                                     | '(' <geometry-tagged-text>+ % ',' ')' { make GeometryCollection.new(geometries => $<geometry-tagged-text>.map({.made})); }
+                                     | '[' <geometry-tagged-text>+ % ',' ']' { make GeometryCollection.new(geometries => $<geometry-tagged-text>.map({.made})); }
                                  }
-
-    rule pointz { <value> <value> <value> }
+# The Z variants
+    
+    rule pointz { <value> <value> <value> { make PointZ.new(x => $<value>[0].made.Num,
+                                                            y => $<value>[1].made.Num,
+                                                            z => $<value>[2].made.Num,
+                                                           ); } }
     rule geometryz-tagged-text {
-        | <pointz-tagged-text>
-        | <linestringz-tagged-text>
-        | <polygonz-tagged-text>
-        | <trianglez-tagged-text>
-        | <polyhedralsurfacez-tagged-text>
-        | <tinz-tagged-text>
-        | <multipointz-tagged-text>
-        | <multilinestringz-tagged-text>
-        | <multipolygonz-tagged-text>
-        | <geometrycollectionz-tagged-text>
+        | <pointz-tagged-text>              { make $<pointz-tagged-text>.made;              }
+        | <linestringz-tagged-text>         { make $<linestringz-tagged-text>.made;         }
+        | <polygonz-tagged-text>            { make $<polygonz-tagged-text>.made;            }
+        | <trianglez-tagged-text>           { make $<trianglez-tagged-text>.made;           }
+        | <polyhedralsurfacez-tagged-text>  { make $<polyhedralsurfacez-tagged-text>.made;  }
+        | <tinz-tagged-text>                { make $<tinz-tagged-text>.made;                }
+        | <multipointz-tagged-text>         { make $<multipointz-tagged-text>.made;         }
+        | <multilinestringz-tagged-text>    { make $<multilinestringz-tagged-text>.made;    }
+        | <multipolygonz-tagged-text>       { make $<multipolygonz-tagged-text>.made;       }
+        | <geometrycollectionz-tagged-text> { make $<geometrycollectionz-tagged-text>.made; }
     }
-    rule pointz-tagged-text              { :i "point" "z"              <pointz-text> }
-    rule linestringz-tagged-text         { :i "linestring" "z"         <linestringz-text> }
-    rule polygonz-tagged-text            { :i "polygon" "z"            <polygonz-text> }
-    rule trianglez-tagged-text           { :i "triangle" "z"           <trianglez-text> }
-    rule polyhedralsurfacez-tagged-text  { :i "polyhedralsurface" "z"  <polyhedralsurfacez-text> }
-    rule tinz-tagged-text                { :i "tin" "z"                <tinz-text> }
-    rule multipointz-tagged-text         { :i "multipoint" "z"         <multipointz-text> }
-    rule multilinestringz-tagged-text    { :i "multilinestring" "z"    <multilinestringz-text> }
-    rule multipolygonz-tagged-text       { :i "multipolygon" "z"       <multipolygonz-text> }
-    rule geometrycollectionz-tagged-text { :i "geometrycollection" "z" <geometrycollectionz-text> }
+    
+    regex pointz-tagged-text              { :i "point"              <.ws>? "z" <.ws>? <pointz-text>              { make $<pointz-text>.made;              } }
+    regex linestringz-tagged-text         { :i "linestring"         <.ws>? "z" <.ws>? <linestringz-text>         { make $<linestringz-text>.made;         } }
+    regex polygonz-tagged-text            { :i "polygon"            <.ws>? "z" <.ws>? <polygonz-text>            { make $<polygonz-text>.made;            } }
+    regex trianglez-tagged-text           { :i "triangle"           <.ws>? "z" <.ws>? <trianglez-text>           { make $<trianglez-text>.made;           } }
+    regex polyhedralsurfacez-tagged-text  { :i "polyhedralsurface"  <.ws>? "z" <.ws>? <polyhedralsurfacez-text>  { make $<polyhedralsurfacez-text>.made;  } }
+    regex tinz-tagged-text                { :i "tin"                <.ws>? "z" <.ws>? <tinz-text>                { make $<tinz-text>.made;                } }
+    regex multipointz-tagged-text         { :i "multipoint"         <.ws>? "z" <.ws>? <multipointz-text>         { make $<multipointz-text>.made;         } }
+    regex multilinestringz-tagged-text    { :i "multilinestring"    <.ws>? "z" <.ws>? <multilinestringz-text>    { make $<multilinestringz-text>.made;    } }
+    regex multipolygonz-tagged-text       { :i "multipolygon"       <.ws>? "z" <.ws>? <multipolygonz-text>       { make $<multipolygonz-text>.made;       } }
+    regex geometrycollectionz-tagged-text { :i "geometrycollection" <.ws>? "z" <.ws>? <geometrycollectionz-text> { make $<geometrycollectionz-text>.made; } }
 
-    rule pointz-text { <empty-set> |
-                      '(' <pointz> ')' |
-                      '[' <pointz> ']'
-                    }
+    rule pointz-text { | <empty-set>
+                        | '(' <pointz> ')' { make $<pointz>.made; }
+                        | '[' <pointz> ']' { make $<pointz>.made; }
+                      }
     rule linestringz-text { | <empty-set>
-                           | '(' <pointz>+ % ',' ')'
-                           | '[' <pointz>+ % ',' ']'
-                         }
+                             | '(' <pointz>+ % ',' ')' { make LineStringZ.new(points => $<pointz>.map({.made})); }
+                             | '[' <pointz>+ % ',' ']' { make LineStringZ.new(points => $<pointz>.map({.made})); }
+                           }
+    rule linearringz-text { | <empty-set>
+                             | '(' <pointz>+ % ',' ')' { make LinearRingZ.new(points => $<pointz>.map({.made})); }
+                             | '[' <pointz>+ % ',' ']' { make LinearRingZ.new(points => $<pointz>.map({.made})); }
+                           }
     rule polygon-textz { | <empty-set>
-                        | '(' <linestringz-text>+ % ',' ')'
-                        | '[' <linestringz-text>+ % ',' ']'
-                      }
+                          | '(' <linearringz-text>+ % ',' ')' { make PolygonZ.new(rings => $<linearringz>.map({.made})); }
+                          | '[' <linearringz-text>+ % ',' ']' { make PolygonZ.new(rings => $<linearringz>.map({.made})); }
+                        }
     rule polyhedralsurfacez-text { | <empty-set>
-                                  | '(' <polygonz-text>+ % ',' ')'
-                                  | '[' <polygonz-text>+ % ',' ']'
-                                }
+                                    | '(' <polygonz-text>+ % ',' ')' { make PolyhedralSurfaceZ.new(polygons => $<polygonz-text>.map({.made})); }
+                                    | '[' <polygonz-text>+ % ',' ']' { make PolyhedralSurfaceZ.new(polygons => $<polygonz-text>.map({.made})); }
+
+                                  }
     rule multipointz-text { | <empty-set>
-                           | '(' <pointz-text>+ % ',' ')'
-                           | '[' <pointz-text>+ % ',' ']'
-                         }
+                             | '(' <pointz-text>+ % ',' ')' { make MultiPointZ.new(points => $<pointz-text>.map({.made})); }
+                             | '[' <pointz-text>+ % ',' ']' { make MultiPointZ.new(points => $<pointz-text>.map({.made})); }
+                           }
     rule multilinestringz-text { | <empty-set>
-                                | '(' <multilinestringz-text>+ % ',' ')'
-                                | '[' <multilinestringz-text>+ % ',' ']'
-                              }
+                                  | '(' <linestringz-text>+ % ',' ')' { make MultiLineStringZ.new(linestrings => $<linestringz-text>.map({.made})); }
+                                  | '[' <linestringz-text>+ % ',' ']' { make MultiLineStringZ.new(linestrings => $<linestringz-text>.map({.made})); }
+                                }
     rule multipolygonz-text { | <empty-set>
-                             | '(' <multipolygonz-text>+ % ',' ')'
-                             | '[' <multipolygonz-text>+ % ',' ']'
-                           }
+                               | '(' <multipolygonz-text>+ % ',' ')' { make MultiPolygonZ.new(polygons => $<multipolygonz-text>.map({.made})); }
+                               | '[' <multipolygonz-text>+ % ',' ']' { make MultiPolygonZ.new(polygons => $<multipolygonz-text>.map({.made})); }
+                             }
     rule geometrycollectionz-text { | <empty-set>
-                                   | '(' <geometry-taggedz-text>+ % ',' ')'
-                                   | '[' <geometry-taggedz-text>+ % ',' ']'
+                                     | '(' <geometryz-tagged-text>+ % ',' ')' { make GeometryCollectionZ.new(geometries => $<geometryz-tagged-text>.map({.made})); }
+                                     | '[' <geometryz-tagged-text>+ % ',' ']' { make GeometryCollectionZ.new(geometries => $<geometryz-tagged-text>.map({.made})); }
                                  }
-
-    rule pointm { <value> <value> <value> }
+# The Μ variants
+    
+    rule pointm { <value> <value> <value> { make PointM.new(x => $<value>[0].made.Num,
+                                                            y => $<value>[1].made.Num,
+                                                            m => $<value>[2].made.Num
+                                                           ); } }
     rule geometrym-tagged-text {
-        | <pointz-tagged-text>
-        | <linestringm-tagged-text>
-        | <polygonm-tagged-text>
-        | <trianglem-tagged-text>
-        | <polyhedralsurfacem-tagged-text>
-        | <tinm-tagged-text>
-        | <multipointm-tagged-text>
-        | <multilinestringm-tagged-text>
-        | <multipolygonm-tagged-text>
-        | <geometrycollectionm-tagged-text>
+        | <pointm-tagged-text>              { make $<pointm-tagged-text>.made;              }
+        | <linestringm-tagged-text>         { make $<linestringm-tagged-text>.made;         }
+        | <polygonm-tagged-text>            { make $<polygonm-tagged-text>.made;            }
+        | <trianglem-tagged-text>           { make $<trianglem-tagged-text>.made;           }
+        | <polyhedralsurfacem-tagged-text>  { make $<polyhedralsurfacem-tagged-text>.made;  }
+        | <tinm-tagged-text>                { make $<tinm-tagged-text>.made;                }
+        | <multipointm-tagged-text>         { make $<multipointm-tagged-text>.made;         }
+        | <multilinestringm-tagged-text>    { make $<multilinestringm-tagged-text>.made;    }
+        | <multipolygonm-tagged-text>       { make $<multipolygonm-tagged-text>.made;       }
+        | <geometrycollectionm-tagged-text> { make $<geometrycollectionm-tagged-text>.made; }
     }
-    rule pointm-tagged-text              { :i "point" "m"              <pointm-text> }
-    rule linestringm-tagged-text         { :i "linestring" "m"         <linestringm-text> }
-    rule polygonm-tagged-text            { :i "polygon" "m"            <polygonm-text> }
-    rule trianglem-tagged-text           { :i "triangle" "m"           <trianglem-text> }
-    rule polyhedralsurfacem-tagged-text  { :i "polyhedralsurface" "m"  <polyhedralsurfacem-text> }
-    rule tinm-tagged-text                { :i "tin" "m"                <tinm-text> }
-    rule multipointm-tagged-text         { :i "multipoint" "m"         <multipointm-text> }
-    rule multilinestringm-tagged-text    { :i "multilinestring" "m"    <multilinestringm-text> }
-    rule multipolygonm-tagged-text       { :i "multipolygon" "m"       <multipolygonm-text> }
-    rule geometrycollectionm-tagged-text { :i "geometrycollection" "m" <geometrycollectionm-text> }
+    
+    regex pointm-tagged-text              { :i "point"              <.ws>? "m" <.ws> <pointm-text>              { make $<pointm-text>.made;              } }
+    regex linestringm-tagged-text         { :i "linestring"         <.ws>? "m" <.ws> <linestringm-text>         { make $<linestringm-text>.made;         } }
+    regex polygonm-tagged-text            { :i "polygon"            <.ws>? "m" <.ws> <polygonm-text>            { make $<polygonm-text>.made;            } }
+    regex trianglem-tagged-text           { :i "triangle"           <.ws>? "m" <.ws> <trianglem-text>           { make $<trianglem-text>.made;           } }
+    regex polyhedralsurfacem-tagged-text  { :i "polyhedralsurface"  <.ws>? "m" <.ws> <polyhedralsurfacem-text>  { make $<polyhedralsurfacem-text>.made;  } }
+    regex tinm-tagged-text                { :i "tin"                <.ws>? "m" <.ws> <tinm-text>                { make $<tinm-text>.made;                } }
+    regex multipointm-tagged-text         { :i "multipoint"         <.ws>? "m" <.ws> <multipointm-text>         { make $<multipointm-text>.made;         } }
+    regex multilinestringm-tagged-text    { :i "multilinestring"    <.ws>? "m" <.ws> <multilinestringm-text>    { make $<multilinestringm-text>.made;    } }
+    regex multipolygonm-tagged-text       { :i "multipolygon"       <.ws>? "m" <.ws> <multipolygonm-text>       { make $<multipolygonm-text>.made;       } }
+    regex geometrycollectionm-tagged-text { :i "geometrycollection" <.ws>? "m" <.ws> <geometrycollectionm-text> { make $<geometrycollectionm-text>.made; } }
 
-    rule pointm-text { <empty-set> |
-                      '(' <pointm> ')' |
-                      '[' <pointm> ']'
-                    }
+    rule pointm-text { | <empty-set>
+                        | '(' <pointm> ')' { make $<pointm>.made; }
+                        | '[' <pointm> ']' { make $<pointm>.made; }
+                      }
     rule linestringm-text { | <empty-set>
-                           | '(' <pointm>+ % ',' ')'
-                           | '[' <pointm>+ % ',' ']'
-                         }
+                             | '(' <pointm>+ % ',' ')' { make LineStringM.new(points => $<pointm>.map({.made})); }
+                             | '[' <pointm>+ % ',' ']' { make LineStringM.new(points => $<pointm>.map({.made})); }
+                           }
+    rule linearringm-text { | <empty-set>
+                             | '(' <pointm>+ % ',' ')' { make LinearRingM.new(points => $<pointm>.map({.made})); }
+                             | '[' <pointm>+ % ',' ']' { make LinearRingM.new(points => $<pointm>.map({.made})); }
+                           }
     rule polygon-textm { | <empty-set>
-                        | '(' <linestringm-text>+ % ',' ')'
-                        | '[' <linestringm-text>+ % ',' ']'
-                      }
+                          | '(' <linearringm-text>+ % ',' ')' { make PolygonM.new(rings => $<linearringm>.map({.made})); }
+                          | '[' <linearringm-text>+ % ',' ']' { make PolygonM.new(rings => $<linearringm>.map({.made})); }
+                        }
     rule polyhedralsurfacem-text { | <empty-set>
-                                  | '(' <polygonm-text>+ % ',' ')'
-                                  | '[' <polygonm-text>+ % ',' ']'
-                                }
+                                    | '(' <polygonm-text>+ % ',' ')' { make PolyhedralSurfaceM.new(polygons => $<polygonm-text>.map({.made})); }
+                                    | '[' <polygonm-text>+ % ',' ']' { make PolyhedralSurfaceM.new(polygons => $<polygonm-text>.map({.made})); }
+
+                                  }
     rule multipointm-text { | <empty-set>
-                           | '(' <pointm-text>+ % ',' ')'
-                           | '[' <pointm-text>+ % ',' ']'
-                         }
+                             | '(' <pointm-text>+ % ',' ')' { make MultiPointM.new(points => $<pointm-text>.map({.made})); }
+                             | '[' <pointm-text>+ % ',' ']' { make MultiPointM.new(points => $<pointm-text>.map({.made})); }
+                           }
     rule multilinestringm-text { | <empty-set>
-                                | '(' <multilinestringm-text>+ % ',' ')'
-                                | '[' <multilinestringm-text>+ % ',' ']'
-                              }
-    rule multipolygonm-text { | <empty-set>
-                             | '(' <multipolygonm-text>+ % ',' ')'
-                             | '[' <multipolygonm-text>+ % ',' ']'
-                           }
-    rule geometrycollectionm-text { | <empty-set>
-                                   | '(' <geometry-taggedm-text>+ % ',' ')'
-                                   | '[' <geometry-taggedm-text>+ % ',' ']'
-                                 }
-
-    rule pointzm { <value> <value> <value> <value>}
-    rule geometryzm-tagged-text {
-        | <pointzm-tagged-text>
-        | <linestringzm-tagged-text>
-        | <polygonzm-tagged-text>
-        | <trianglezm-tagged-text>
-        | <polyhedralsurfacezm-tagged-text>
-        | <tinzm-tagged-text>
-        | <multipointzm-tagged-text>
-        | <multilinestringzm-tagged-text>
-        | <multipolygonzm-tagged-text>
-        | <geometrycollectionzm-tagged-text>
-    }
-    rule pointzm-tagged-text              { :i "point" "zm"              <pointzm-text> }
-    rule linestringzm-tagged-text         { :i "linestring" "zm"         <linestringzm-text> }
-    rule polygonzm-tagged-text            { :i "polygon" "zm"            <polygonzm-text> }
-    rule trianglezm-tagged-text           { :i "triangle" "zm"           <trianglezm-text> }
-    rule polyhedralsurfacezm-tagged-text  { :i "polyhedralsurface" "zm"  <polyhedralsurfacezm-text> }
-    rule tinzm-tagged-text                { :i "tin" "zm"                <tinzm-text> }
-    rule multipointzm-tagged-text         { :i "multipoint" "zm"         <multipointzm-text> }
-    rule multilinestringzm-tagged-text    { :i "multilinestring" "zm"    <multilinestringzm-text> }
-    rule multipolygonzm-tagged-text       { :i "multipolygon" "zm"       <multipolygonzm-text> }
-    rule geometrycollectionzm-tagged-text { :i "geometrycollection" "zm" <geometrycollectionzm-text> }
-
-    rule pointzm-text { <empty-set> |
-                      '(' <pointzm> ')' |
-                      '[' <pointzm> ']'
-                    }
-    rule linestringzm-text { | <empty-set>
-                           | '(' <pointzm>+ % ',' ')'
-                           | '[' <pointzm>+ % ',' ']'
-                         }
-    rule polygon-textzm { | <empty-set>
-                        | '(' <linestringzm-text>+ % ',' ')'
-                        | '[' <linestringzm-text>+ % ',' ']'
-                      }
-    rule polyhedralsurfacezm-text { | <empty-set>
-                                  | '(' <polygonzm-text>+ % ',' ')'
-                                  | '[' <polygonzm-text>+ % ',' ']'
+                                  | '(' <linestringm-text>+ % ',' ')' { make MultiLineStringM.new(linestrings => $<linestringm-text>.map({.made})); }
+                                  | '[' <linestringm-text>+ % ',' ']' { make MultiLineStringM.new(linestrings => $<linestringm-text>.map({.made})); }
                                 }
-    rule multipointzm-text { | <empty-set>
-                           | '(' <pointzm-text>+ % ',' ')'
-                           | '[' <pointzm-text>+ % ',' ']'
-                         }
-    rule multilinestringzm-text { | <empty-set>
-                                | '(' <multilinestringzm-text>+ % ',' ')'
-                                | '[' <multilinestringzm-text>+ % ',' ']'
-                              }
-    rule multipolygonzm-text { | <empty-set>
-                             | '(' <multipolygonzm-text>+ % ',' ')'
-                             | '[' <multipolygonzm-text>+ % ',' ']'
+    rule multipolygonm-text { | <empty-set>
+                               | '(' <multipolygonm-text>+ % ',' ')' { make MultiPolygonM.new(polygons => $<multipolygonm-text>.map({.made})); }
+                               | '[' <multipolygonm-text>+ % ',' ']' { make MultiPolygonM.new(polygons => $<multipolygonm-text>.map({.made})); }
+                             }
+    rule geometrycollectionm-text { | <empty-set>
+                                     | '(' <geometrym-tagged-text>+ % ',' ')' { make GeometryCollectionM.new(geometries => $<geometrym-tagged-text>.map({.made})); }
+                                     | '[' <geometrym-tagged-text>+ % ',' ']' { make GeometryCollectionM.new(geometries => $<geometrym-tagged-text>.map({.made})); }
+                                 }
+# The ZΜ variants
+    
+    rule pointzm { <value> <value> <value> <value> { make PointZM.new(x => $<value>[0].made.Num,
+                                                                      y => $<value>[1].made.Num,
+                                                                      z => $<value>[2].made.Num,
+                                                                      m => $<value>[3].made.Num
+                                                                     ); } }
+    rule geometryzm-tagged-text {
+        | <pointzm-tagged-text>              { make $<pointzm-tagged-text>.made;              }
+        | <linestringzm-tagged-text>         { make $<linestringzm-tagged-text>.made;         }
+        | <polygonzm-tagged-text>            { make $<polygonzm-tagged-text>.made;            }
+        | <trianglezm-tagged-text>           { make $<trianglezm-tagged-text>.made;           }
+        | <polyhedralsurfacezm-tagged-text>  { make $<polyhedralsurfacezm-tagged-text>.made;  }
+        | <tinzm-tagged-text>                { make $<tinzm-tagged-text>.made;                }
+        | <multipointzm-tagged-text>         { make $<multipointzm-tagged-text>.made;         }
+        | <multilinestringzm-tagged-text>    { make $<multilinestringzm-tagged-text>.made;    }
+        | <multipolygonzm-tagged-text>       { make $<multipolygonzm-tagged-text>.made;       }
+        | <geometrycollectionzm-tagged-text> { make $<geometrycollectionzm-tagged-text>.made; }
+    }
+    
+    regex pointzm-tagged-text              { :i "point"              <.ws>? "zm" <.ws> <pointzm-text>              { make $<pointzm-text>.made;              } }
+    regex linestringzm-tagged-text         { :i "linestring"         <.ws>? "zm" <.ws> <linestringzm-text>         { make $<linestringzm-text>.made;         } }
+    regex polygonzm-tagged-text            { :i "polygon"            <.ws>? "zm" <.ws> <polygonzm-text>            { make $<polygonzm-text>.made;            } }
+    regex trianglezm-tagged-text           { :i "triangle"           <.ws>? "zm" <.ws> <trianglezm-text>           { make $<trianglezm-text>.made;           } }
+    regex polyhedralsurfacezm-tagged-text  { :i "polyhedralsurface"  <.ws>? "zm" <.ws> <polyhedralsurfacezm-text>  { make $<polyhedralsurfacezm-text>.made;  } }
+    regex tinzm-tagged-text                { :i "tin"                <.ws>? "zm" <.ws> <tinzm-text>                { make $<tinzm-text>.made;                } }
+    regex multipointzm-tagged-text         { :i "multipoint"         <.ws>? "zm" <.ws> <multipointzm-text>         { make $<multipointzm-text>.made;         } }
+    regex multilinestringzm-tagged-text    { :i "multilinestring"    <.ws>? "zm" <.ws> <multilinestringzm-text>    { make $<multilinestringzm-text>.made;    } }
+    regex multipolygonzm-tagged-text       { :i "multipolygon"       <.ws>? "zm" <.ws> <multipolygonzm-text>       { make $<multipolygonzm-text>.made;       } }
+    regex geometrycollectionzm-tagged-text { :i "geometrycollection" <.ws>? "zm" <.ws> <geometrycollectionzm-text> { make $<geometrycollectionzm-text>.made; } }
+
+    rule pointzm-text { | <empty-set>
+                        | '(' <pointzm> ')' { make $<pointzm>.made; }
+                        | '[' <pointzm> ']' { make $<pointzm>.made; }
+                      }
+    rule linestringzm-text { | <empty-set>
+                             | '(' <pointzm>+ % ',' ')' { make LineStringZM.new(points => $<pointzm>.map({.made})); }
+                             | '[' <pointzm>+ % ',' ']' { make LineStringZM.new(points => $<pointzm>.map({.made})); }
                            }
+    rule linearringzm-text { | <empty-set>
+                             | '(' <pointzm>+ % ',' ')' { make LinearRingZM.new(points => $<pointzm>.map({.made})); }
+                             | '[' <pointzm>+ % ',' ']' { make LinearRingZM.new(points => $<pointzm>.map({.made})); }
+                           }
+    rule polygon-textzm { | <empty-set>
+                          | '(' <linearringzm-text>+ % ',' ')' { make PolygonZM.new(rings => $<linearringzm>.map({.made})); }
+                          | '[' <linearringzm-text>+ % ',' ']' { make PolygonZM.new(rings => $<linearringzm>.map({.made})); }
+                        }
+    rule polyhedralsurfacezm-text { | <empty-set>
+                                    | '(' <polygonzm-text>+ % ',' ')' { make PolyhedralSurfaceZM.new(polygons => $<polygonzm-text>.map({.made})); }
+                                    | '[' <polygonzm-text>+ % ',' ']' { make PolyhedralSurfaceZM.new(polygons => $<polygonzm-text>.map({.made})); }
+
+                                  }
+    rule multipointzm-text { | <empty-set>
+                             | '(' <pointzm-text>+ % ',' ')' { make MultiPointZM.new(points => $<pointzm-text>.map({.made})); }
+                             | '[' <pointzm-text>+ % ',' ']' { make MultiPointZM.new(points => $<pointzm-text>.map({.made})); }
+                           }
+    rule multilinestringzm-text { | <empty-set>
+                                  | '(' <linestringzm-text>+ % ',' ')' { make MultiLineStringZM.new(linestrings => $<linestringzm-text>.map({.made})); }
+                                  | '[' <linestringzm-text>+ % ',' ']' { make MultiLineStringZM.new(linestrings => $<linestringzm-text>.map({.made})); }
+                                }
+    rule multipolygonzm-text { | <empty-set>
+                               | '(' <multipolygonzm-text>+ % ',' ')' { make MultiPolygonZM.new(polygons => $<multipolygonzm-text>.map({.made})); }
+                               | '[' <multipolygonzm-text>+ % ',' ']' { make MultiPolygonZM.new(polygons => $<multipolygonzm-text>.map({.made})); }
+                             }
     rule geometrycollectionzm-text { | <empty-set>
-                                   | '(' <geometry-taggedzm-text>+ % ',' ')'
-                                   | '[' <geometry-taggedzm-text>+ % ',' ']'
+                                     | '(' <geometryzm-tagged-text>+ % ',' ')' { make GeometryCollectionZM.new(geometries => $<geometryzm-tagged-text>.map({.made})); }
+                                     | '[' <geometryzm-tagged-text>+ % ',' ']' { make GeometryCollectionZM.new(geometries => $<geometryzm-tagged-text>.map({.made})); }
                                  }
 }
 
@@ -1721,6 +1756,36 @@ our sub from-wkb(Buf $buff) {
     fail "from-wkb: buffer too short" if $offset > $length;
     $geometry;
 }
+
+my @examples = (
+    'Point(10 10)',
+    'LineString(10.01 10.3,20 20,30 50)',
+    'LineString M (10.01 10.3 1.3,20 20 1.2,30 50 1.1)',
+#    'Polygon((10 10.1,10 20.2,20 20.3,20 15.4,19 19))',
+#    'MultiPoint((10.01 10.3),(20 20),(30 50))',
+#    'MultiPoint((10 10),(20 20))',
+#    'MultiPolygon(((10 10,10 20,20 20,20 15,10 10)),((60 60,70 70,80 60,60 60)))',
+#    'MultiLineString((10 10,20 20),(15 15,30 15))',
+#    'GeometryCollection(Point(10 10),Point(30 30),LineString(15 15,20 20))',
+# FROM UK OS:
+    'LineString M(4 1 2,4 2 1)',
+    'LineStringM(4 1 2,4 2 1)',
+    'LineStringZ(4 1 2,4 1 3)',
+    'Point ZM (1 2 3 4)',
+#    'LineStringZM(4 1 2 1,4 1 3 4)',
+#    'MULTILINESTRING ZM ((464759.47000000003 1212349.74 0 -1.797693134862316e+308,464816.08 1212360.29 0 -1.797693134862316e+308))',
+    'MULTILINESTRING ZM ((615254.6 153137.68 0 -1.7976e+308,615288.79 153175.44 0 -1.7976e+308,615338.17 153247.95 0 -1.7976e+308))',
+);
+
+use Test;
+
+for @examples -> $ex {
+    dd $ex;
+    my $wkt = WKT.parse($ex).made;
+    dd $wkt;
+    is $ex.lc, $wkt.wkt.lc, 'roundtrip';
+}
+
 
 =begin pod
 =TITLE Geo::Geometry
