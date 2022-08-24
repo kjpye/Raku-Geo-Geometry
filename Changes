@@ -1,6 +1,8 @@
 Revision history for Geo::Geometry
 
 {{$NEXT}}
+        - Complete WKT grammar
+        - split WKB and WKT into separate submodules
 
 0.0.2  2022-07-18T19:47:05+10:00
 	- Allow access to components
