@@ -94,8 +94,8 @@ grammar WKT {
                                   | '[' <linestring-text>+ % ',' ']' # external action required
                                 }
     rule multipolygon-text { | <empty-set>
-                               | '(' <multipolygon-text>+ % ',' ')' # external action required
-                               | '[' <multipolygon-text>+ % ',' ']' # external action required
+                               | '(' <polygon-text>+ % ',' ')' # external action required
+                               | '[' <polygon-text>+ % ',' ']' # external action required
                              }
     rule geometrycollection-text { | <empty-set>
                                      | '(' <geometry-tagged-text>+ % ',' ')' # 3external action required

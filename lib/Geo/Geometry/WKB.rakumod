@@ -427,7 +427,7 @@ sub wkb-read-geometry($buff, $offset is rw, $endian) {
     $geometry;
 }
 
-our sub from-wkb(Buf $buff) {
+our sub from-wkb(Buf $buff) is export {
     my $length = $buff.elems;
     my $byteorder = $buff[0] ?? wkbNDR !! wkbXDR;
     my $endian = $byteorder == wkbNDR ?? BigEndian !! LittleEndian;

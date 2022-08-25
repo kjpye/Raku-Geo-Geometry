@@ -1,0 +1,353 @@
+
+=begin pod
+=TITLE Geo::Geometry
+
+C<Geo::Geometry> is a group of modules for handling geographic data.
+
+The included modules are
+=item C<Geo::Geometry>
+=item C<Geo::Geometry::WKB>
+=item C<Geo::Geometry::WKT>
+=item C<Geo::Geometry::WKT::Grammar>
+
+These modules are based on chapters 8 and 9 of the Open Geospatial Consortium's
+I<OpenGISⓇ Implemantation Standard for Geographic Information - Simple Feature Access - part 1: Common architecture>.
+This can be obtained from L<https://www.ogc.org/standards/sfa>.
+
+=head1 Geo::Geometry
+
+A series of classes for storing geographic data.
+
+=head2 Generic Methods
+
+The following methods are available for most classes.
+Classes for which they are not available are documented below.
+
+=head3 type
+
+The C<type> method returns a member of the C<WKBGeometryType> enum
+corresponding to the geometry type.
+
+=head3 Str
+
+The C<Str> method returns a string representing the object.
+Note that this is B<not> the WKT representation, which can be obtained
+using the C<wkt> method described below.
+
+=head3 wkb
+
+The C<wkb> method will produce a C<Buf> object with the
+well-known-binary representation of the object. An optional
+named argument C<byteorder> parameter is available.
+The value of the argument is one of the values of the
+C<WKBByteOrder> enum.
+The default value is C<wkbXDR> (little endian)
+with the alternative being C<wkbNDR> (big endian).
+
+=head3 wkt
+
+The C<wkt> method returns a string containing the well-known text representation of the geometry.
+
+=head3 tobuf
+
+The C<tobuf> method is used internally; This interface may change without warning.
+
+=head2 Subroutines
+
+=head3 from-wkt
+
+The C<from-wkt> subroutine takes a string as parameter
+and returns a C<Geometry> object if the string contains
+a WKT representation of a geometry.
+
+=head3 from-wkb
+
+The C<from-wkb> subroutine takes a Buf as parameter,
+and returns a C<Geometry> object if the Buf contains
+a WKΒ representation of a geometry.
+
+=head2 Enums
+
+Two enums are defined which represent values used
+in the WKB representation of a geometry.
+
+=head3 WKBByteOrder
+
+The C<WKBByteOrder> enum gives the values used in the byte order field of a WKB representation. It contains two values C<wkbXDR> (0, little-endian) and C<wkbBDR> (1, big-endian).
+
+=head3 WKBGeometryType
+
+The C<WKBGeometryType> enum contains the values used in the geometry type filed of a WKB representation. It allows for the following values:
+
+=begin table
+    1 | wkbPoint
+    2 | wkbLineString
+    3 | wkbPolygon
+    4 | wkbMultiPoint
+    5 | wkbMultiLineString
+    6 | wkbMultiPolygon
+    7 | wkbGeometryCollection
+   15 | wkbPolyhedralSurface
+   16 | wkbTIN
+   17 | wkbTriangle
+ 1001 | wkbPointZ
+ 1002 | wkbLineStringZ
+ 1003 | wkbPolygonZ
+ 1004 | wkbMultiPointZ
+ 1005 | wkbMultiLineStringZ
+ 1006 | wkbMultiPolygonZ
+ 1007 | wkbGeometryCollectionZ
+ 1015 | wkbPolyhedralSurfaceZ
+ 1016 | wkbTINZ
+ 1017 | wkbTriangleZ
+ 2001 | wkbPointM
+ 2002 | wkbLineStringM
+ 2003 | wkbPolygonM
+ 2004 | wkbMultiPointM
+ 2005 | wkbMultiLineStringM
+ 2006 | wkbMultiPolygonM
+ 2007 | wkbGeometryCollectionM
+ 2015 | wkbPolyhedralSurfaceM
+ 2016 | wkbTINM
+ 2017 | wkbTriangleM
+ 3001 | wkbPointZM
+ 3002 | wkbLineStringZM
+ 3003 | wkbPolygonZM
+ 3004 | wkbMultiPointZM
+ 3005 | wkbMultiLineStringZM
+ 3006 | wkbMultiPolygonZM
+ 3007 | wkbGeometryCollectionZM
+ 3015 | wkbPolyhedralSurfaceZM
+ 3016 | wkbTINZM
+ 3017 | wkbTriangleZM
+=end table
+
+=head2 Object types (classes)
+
+=head3 Geometry
+
+C<Geometry> is a role which all the other objects inherit.
+It contains no methods, and is simply a marker that another class
+is a Geometry type.
+
+If you want to check whether a variable contains any of
+the geometry classes, then code like
+=begin code
+  if $variable ~~ Geometry { ... }
+=end code
+can be useful.
+
+=head3 Point
+=head3 PointZ
+=head3 PointM
+=head3 PointZM
+
+The C<Point> class represents a single point geometry.
+It has two attributes, C<x> and C<y>, each of which is
+constrained to be a 64-bit floating point number (C<num>).
+
+The C<PointZ> class also contains a third attribute C<z>
+to represent a third dimension.
+
+The C<PointM> class, in addition to the C<X> and C<y>
+attributes contains an C<m> attribute which can contain
+an arbitrary "measure" in addition to the two-dimensionallocation.
+
+The C<PointMZ> class combines the C<z> attribute of C<PointZ>
+and the C<m> attribute of C<PointM>.
+
+An object of each class may be constructed either by using
+named parameters (C<<Point.new(x => 10, y => 12)>>,
+or by using positional parameters (C<<PointZ.new(1,2,3)>>).
+When positional parameters are used, the ordering of
+the parameters is C<x>, C<y>, C<z>, C<m>;
+omitting those parameters which are not appropriate
+for the object type.
+
+All the parameters of a point geometry are required.
+C<NaN> might be used if an C<m> parameter for example
+were not required.
+
+Accessor methodes are available for the C<x>, C<y>, C<z> and C<m>.
+
+=head2 LineString
+=head2 LineStringZ
+=head2 LineStringM
+=head2 LineStringZM
+
+The C<LineString> class represents a single line,
+a sequence of C<Point>s, not necessarily closed.
+
+Similarly, C<LineStringZ>, C<LineStringM> and C<LineStringZM>
+are lines consisting of  sequences of C<PointZ>s, C<PointM>sand C<PointZM>s respectively.
+
+An object in the LineString family is created by passing
+an array of the appropriate point type geometries,
+to the named argument C<points>.
+
+At the moment there is no way of accessing the contents
+of a LineString geometry other than using the standard methods.
+
+An accessor method C<points> will give the constituent points.
+
+=head3 LinearRing
+=head3 LinearRingZ
+=head3 LinearRingM
+=head3 LinearRingZM
+
+Objects in the LinearRing classes are not normally
+intended for end users, apart from their use in creating
+more complex objects. None of the usual methods apply to
+these types of object.
+
+A linear ring is similar to a line string, but is closed;
+i.e. the last point should be identical to the first point.
+This is not currently enforced, but may be in the future.
+Creation of a linear ring is the same as that of a line string.
+The ring should be simple; the path should not cross itself.
+This is also not enforced.
+
+Each of these classes has a C<winding> method.
+This determines whether the linear ring is clockwise
+(a positive number is returned) or anti-clockwise
+(a negative number is returned).
+This method will be unreliable unless the linear ring
+actually is a simple closed loop.
+The winding method ignores everything except the
+C<x> and C<y> attributes.
+
+An accessor method C<points> will give the constituent points.
+
+=head3 Polygon
+=head3 PolygonZ
+=head3 PolygonM
+=head3 PolygonZM
+
+A C<Polygon> consists of one or more C<LinearRings>. In general, the first linear ring should be clockwise (with a positive winding number). The other linear rings should be fully enclosed within the first and be disjoint from each other. They should have a negative winding number. These rings represent a polygon (the first ring) and holes within that polygon, represented by the other rings. Having only a single ring specified is acceptable (and normal under most circumstances), representing a polygon without holes.
+
+A C<Polygon> is created using an array of rings, such as C<<Polygon.new(rings => @rings)>>.
+
+An accessor method C<rings> will give the constituent rings.
+
+C<PolygonZ>, C<PolygonM> and C<PolygonZM> behave similarly.
+
+=head3 Triangle
+=head3 TriangleZ
+=head3 TriangleM
+=head3 TriangleZM
+
+A triangle is a polygon where the outer ring has exactly four points,
+the fourth being the same as the first and otherwise having no oints in common.
+The points must not be in a straight line. No internal rings are permitted.
+
+An accessor method C<rings> gives the constituent rings.
+
+=head3 PolyhedralSurface
+=head3 PolyhedralSurfaceZ
+=head3 PolyhedralSurfaceM
+=head3 PolyhedralSurfaceZM
+
+A polyhedral surface is a set of contiguous non-overlapping polygons. (There are further restrictions.)
+
+=head3 TIN
+=head3 TINZ
+=head3 TINM
+=head3 TINZM
+
+A triangular irregular network is a polyhedral surface consisting
+only of triangles.
+
+=head3 MultiPoint
+=head3 MultiPointZ
+=head3 MultiPointM
+=head3 MultiPointZM
+
+The MultiPoint classes behave just like LineStrings,
+including their definition.
+The difference is the intent of the object.
+A LineString, as the name implies, forms a line.
+A MultiPoint object is just a collection of points.
+
+=head3 MultiLineString
+=head3 MultiLineStringZ
+=head3 MultiLineStringM
+=head3 MultiLineStringZM
+
+A C<MultiLineString> object contains an array of C<LineString>s.
+It is created with that array:
+=begin code
+     MultiLineString.new(linestrings => @array-of-linestrings)
+=end code
+     
+=head3 MultiPolygon
+=head3 MultiPolygonZ
+=head3 MultiPolygonM
+=head3 MultiPolygonZM
+
+Just as a C<MultiPoint> is a collections of C<Point>s, and a C<MultiLineString> is a collection of C<LineString>s, a C<MultiPolygon> is a collection of C<Polygon>s.
+
+=head3 GeometryCollection
+=head3 GeometryCollectionZ
+=head3 GeometryCollectionM
+=head3 GeometryCollectionZM
+
+A GeometryCollection is an arbitrary collection of geometry objects.
+Unlike a PointCollection, a LineStringCollection or a PolygonCollection,
+the objects do not need to be of the same geometry type.
+
+=head1 Geo::Geometry::WKB
+
+The C<Geo::Geometry::WKB> module contains a single function:
+
+=head2 from-wkb
+
+C<from-wkb> takes a single C<Buf> parameter, and returns a single C<Geo::Geometry> object corresponding to the wkb specification, or a C<Failure> if the contents of the Buff cannot be interpreted as a geometry object.
+
+=head1 Geo::Geometry::WKT
+
+The C<Geo::Geometry::WKT> module contains a single function:
+
+=head2 from-wkt
+
+C<from-wkt> takes a single C<Str> parameter, abd returns a single C<Geo::Geometry> object corresponding to the wkt specification, or a C<Failure> if the contents of the string cannot be interpreted as a Geometry object.
+
+The conversion is case-insensitive, and optiona whitespace may be included in various places. Thus the following strings will all produce the same object:
+
+=begin code
+    PointZ(123 456 789)
+    Point Z (123 456 789)
+    Point Z(123 456 789)
+    pointz (123 456 789)
+=end code
+
+=head1 Geo::Geometry::WKT::Grammar
+
+The C<Geo::Geometry::WKT::Grammar> module contains a single grammar C<Geo::Geometry::WKT::Grammar::WKT>.
+
+This is the same grammar used by the C<Geo::Geometry::WKT> module, but it can be used separately to parse WKT strings.
+
+The general usage would be
+
+=begin code
+    my $results = Geo::Geometry::WKT::Grammar::WKT.parse($string, actions => My::Actions);
+=end code
+
+The actions used by C<Geo::Geometry::WKT::from-wkt> are available in C<Geo::Geometry::WKT::WKT-Actions>, but in that case you might as well use C<from-wkt> described above.
+
+The actions class will need to include the following methods (36 in total):
+
+=begin table
+ Geometry type | Method | Available Parameters
+ --------------+--------+---------------------
+ Point[Z][M]         | point[z][m]  | $<value> — an array containing the values for x, y, z and m as appropriate
+ LineString[Z][M]    | linestring[z][m]-text | $<point[z][m]> — an array of whatever the relevant point method passed to make.
+ LinearRing[Z][M]    | linearring[z][m]-text | $<point[z][m]> — and array of whatever the relevant point method passed to make.
+ Polygon[Z][M]       | polygon[z][m]-text    | $<linearring[z][m]-text — an array of whatever the appropriate linearring-text method passed to make.
+ PolyhedralSurface[Z][M] | polyhedralsurface[z][m]-text | $<polygon[z][m]-text — an array of whatever the appropriate polygon-text method passed to make.
+ MultiPoint[Z][M]    | multipoint[z][m]-text | $<point[z][m]> — an array of whatever the relevant point method passed to make.
+ MultiLineString[Z][M] | multilinestring[z][m]-text | $<linestring[z][m]-text> — an array of whatever the relevant linestring-text method passed to make.
+ MultiPolygon[Z][M] | multipolygon[z][m]-text | $<polygon[z][m]-text — an array of whatever the appropriate polygon-text method passed to make.
+ GeometryCollection[Z][M] | geometrycollection[z][m]-tagged-text  | $<geometry[z][m]-tagged-text> — an array of whatever the relevant geometry-text method passed to make.
+=end table
+
+=end pod

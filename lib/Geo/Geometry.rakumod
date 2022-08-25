@@ -1,12 +1,3 @@
-use Grammar::Tracer;
-
-class Geo::Geometry::WKB { ... }
-class Geo::Geometry::WKT { ... }
-class Geo::Geometry::WKT::Actions { ... }
-use Geo::Geometry::WKB;
-use Geo::Geometry::WKT;
-use Geo::Geometry::Wkt::Actions;
-
 enum WKBByteOrder (
     wkbXDR => 0,
     wkbNDR => 1,
@@ -111,7 +102,7 @@ class PointM does Geometry {
     has Num $.m is required is built;
     
     method type { wkbPointM }
-    multi method new($x, $y, $m) { dd $m; dd $m.Num; self.bless(x => $x.Num, y => $y.Num, m => $m.Num) }
+    multi method new($x, $y, $m) { self.bless(x => $x.Num, y => $y.Num, m => $m.Num) }
     method Str() { "{$!x} {$!y} {$!m}" }
     method wkt() { "PointM({self.Str})"; }
     method tobuf($endian) {
@@ -793,6 +784,8 @@ class MultiLineStringZ does Geometry {
 
     method type { $!type; }
     method TWEAK { $!num-linestrings = +@!linestrings; }
+    method Str { '(' ~ @!linestrings.map({.Str}).join('),(') ~ ')'; }
+    method wkt { 'MultiLineStringZ(' ~ self.Str ~ ')'; }
     method tobuf($endian) {
         my $b = Buf.new(0);
         $b.write-uint32(0, $!num-linestrings, $endian);
@@ -814,6 +807,8 @@ class MultiLineStringM does Geometry {
 
     method type { $!type; }
     method TWEAK { $!num-linestrings = +@!linestrings; }
+    method Str { '(' ~ @!linestrings.map({.Str}).join('),(') ~ ')'; }
+    method wkt { 'MultiLineStringM(' ~ self.Str ~ ')'; }
     method tobuf($endian) {
         my $b = Buf.new(0);
         $b.write-uint32(0, $!num-linestrings, $endian);
@@ -1017,10 +1012,10 @@ class GeometryCollectionZM does Geometry {
     }
 }
 
-our sub from-wkt (Str $s) is DEPRECATED {
-    Geo::Geometry::WKT::Grammar::WKT.parse($s, actions => Geo::Geometry::WKT::Wkt-Actions).made;
-}
+#our sub from-wkt (Str $s) is DEPRECATED {
+#    Geo::Geometry::WKT::Grammar::WKT.parse($s, actions => Geo::Geometry::WKT::Wkt-Actions).made;
+#}
 
-our sub from-wkb(Buf $buff) is DEPRECATED {
-    Geo::Geometry::WKB::from-wkb($buff);
-}
+#our sub from-wkb(Buf $buff) is DEPRECATED {
+#    Geo::Geometry::WKB::from-wkb($buff);
+#}

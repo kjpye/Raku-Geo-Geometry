@@ -1,3 +1,5 @@
+use Geo::Geometry;
+use Geo::Geometry::WKT::Grammar;
 class WKT-Actions {
 
 # Point
@@ -31,13 +33,13 @@ class WKT-Actions {
         make LineString.new(points => $<point>.map({.made}));
     }
     method linestringz-text($/) {
-        make LineString.new(points => $<pointz>.map({.made}));
+        make LineStringZ.new(points => $<pointz>.map({.made}));
     }
     method linestringm-text($/) {
-        make LineString.new(points => $<pointm>.map({.made}));
+        make LineStringM.new(points => $<pointm>.map({.made}));
     }
     method linestringzm-text($/) {
-        make LineString.new(points => $<pointzm>.map({.made}));
+        make LineStringZM.new(points => $<pointzm>.map({.made}));
     }
 
 # LinearRing
@@ -56,89 +58,89 @@ class WKT-Actions {
 
 # Polygon
     method polygon-text($/) {
-        make Polygon.new(rings => $<linearring>.map({.made}));
+        make Polygon.new(rings => $<linearring-text>.map({.made}));
     }
     method polygonz-text($/) {
-        make PolygonZ.new(rings => $<linearring>.map({.made}));
+        make PolygonZ.new(rings => $<linearring-text>.map({.made}));
     }
     method polygonm-text($/) {
-        make PolygonM.new(rings => $<linearring>.map({.made}));
+        make PolygonM.new(rings => $<linearring-text>.map({.made}));
     }
     method polygonzm-text($/) {
-        make PolygonZM.new(rings => $<linearring>.map({.made}));
+        make PolygonZM.new(rings => $<linearring-text>.map({.made}));
     }
 
 # PolyhedralSurface
     method polyhedralsurface-text($/) {
-        make PolyhedralSurface.new(polygons => $<polygon>.map({.made}));
+        make PolyhedralSurface.new(polygons => $<polygon-text>.map({.made}));
     }
     method polyhedralsurfacez-text($/) {
-        make PolyhedralSurfaceZ.new(polygons => $<polygon>.map({.made}));
+        make PolyhedralSurfaceZ.new(polygons => $<polygon-text>.map({.made}));
     }
     method polyhedralsurfacem-text($/) {
-        make PolyhedralSurfaceM.new(polygons => $<polygon>.map({.made}));
+        make PolyhedralSurfaceM.new(polygons => $<polygon-text>.map({.made}));
     }
     method polyhedralsurfacezm-text($/) {
-        make PolyhedralSurfaceZM.new(polygons => $<polygon>.map({.made}));
+        make PolyhedralSurfaceZM.new(polygons => $<polygon-text>.map({.made}));
     }
 
 # MultiPoint
     method multipoint-text($/) {
-        make MultiPoint.new(points => $<point>.map({.made}));
+        make MultiPoint.new(points => $<point-text>.map({.made}));
     }
     method multipointz-text($/) {
-        make MultiPointZ.new(points => $<point>.map({.made}));
+        make MultiPointZ.new(points => $<point-text>.map({.made}));
     }
     method multipointm-text($/) {
-        make MultiPointM.new(points => $<point>.map({.made}));
+        make MultiPointM.new(points => $<point-text>.map({.made}));
     }
     method multipointzm-text($/) {
-        make MultiPointZM.new(points => $<point>.map({.made}));
+        make MultiPointZM.new(points => $<point-text>.map({.made}));
     }
 
 # MultiLineString
     method multilinestring-text($/) {
-        make MultLineString.new(linestrings => $<linestring>.map({.made}));
+        make MultiLineString.new(linestrings => $<linestring-text>.map({.made}));
     }
     method multilinestringz-text($/) {
-        make MultLineStringZ.new(linestrings => $<linestring>.map({.made}));
+        make MultiLineStringZ.new(linestrings => $<linestringz-text>.map({.made}));
     }
     method multilinestringm-text($/) {
-        make MultLineStringM.new(linestrings => $<linestring>.map({.made}));
+        make MultiLineStringM.new(linestrings => $<linestringm-text>.map({.made}));
     }
     method multilinestringzm-text($/) {
-        make MultLineStringZM.new(linestrings => $<linestring>.map({.made}));
+        make MultiLineStringZM.new(linestrings => $<linestringzm-text>.map({.made}));
     }
 
 # MultiPolygon    
     method multipolygon-text($/) {
-        make MultiPolygon.new(polygons => $<polygon>.map({.made}));
+        make MultiPolygon.new(polygons => $<polygon-text>.map({.made}));
     }
     method multipolygonz-text($/) {
-        make MultiPolygonZ.new(polygons => $<polygon>.map({.made}));
+        make MultiPolygonZ.new(polygons => $<polygon-text>.map({.made}));
     }
     method multipolygonm-text($/) {
-        make MultiPolygonM.new(polygons => $<polygon>.map({.made}));
+        make MultiPolygonM.new(polygons => $<polygon-text>.map({.made}));
     }
     method multipolygonzm-text($/) {
-        make MultiPolygonZM.new(polygons => $<polygon>.map({.made}));
+        make MultiPolygonZM.new(polygons => $<polygon-text>.map({.made}));
     }
 
 # GeometryCollection
     method geometrycollection-text($/) {
-        make GeometryCollection.new(geometries => $<geometry>.map({.made}));
+        make GeometryCollection.new(geometries => $<geometry-tagged-text>.map({.made}));
     }
     method geometrycollectionz-text($/) {
-        make GeometryCollectionZ.new(geometries => $<geometry>.map({.made}));
+        make GeometryCollectionZ.new(geometries => $<geometry-tagged-text>.map({.made}));
     }
     method geometrycollectionm-text($/) {
-        make GeometryCollectionM.new(geometries => $<geometry>.map({.made}));
+        make GeometryCollectionM.new(geometries => $<geometry-tagged-text>.map({.made}));
     }
     method geometrycollectionzm-text($/) {
-        make GeometryCollectionZM.new(geometries => $<geometry>.map({.made}));
+        make GeometryCollectionZM.new(geometries => $<geometry-tagged-text>.map({.made}));
     }
 }
 
-our sub from-wkt(Str $s) {
-    WKT.parse($s, actions => WKT-actions).made;
+our sub from-wkt(Str $s) is export {
+    WKT.parse($s, actions => WKT-Actions).made;
 }
