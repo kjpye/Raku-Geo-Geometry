@@ -13,10 +13,7 @@
   "name": "Geo::Geometry",
   "perl": "6.c",
   "provides": {
-    "Geo::Geometry": "lib/Geo/Geometry.rakumod",
-    "Geo::Geometry::WKB": "lib/Geo/Geometry/WKB.rakumod",
-    "Geo::Geometry::WKT": "lib/Geo/Geometry/WKT.rakumod",
-    "Geo::Geometry::WKT::Grammar": "lib/Geo/Geometry/WKT/Grammar.rakumod"
+    "Geo::Geometry": "lib/Geo/Geometry.rakumod"
   },
   "resources": [
   ],
