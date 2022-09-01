@@ -1012,10 +1012,10 @@ class GeometryCollectionZM does Geometry {
     }
 }
 
-our sub from-wkt (Str $s) is DEPRECATED {
-    Geo::WellKnownText::Grammar::WKT.parse($s, actions => Geo::WellKnownText::Grammar::Wkt-Actions).made;
-}
+#our sub from-wkt (Str $s) is DEPRECATED {
+#    Geo::WellKnownText::Grammar::WKT.parse($s, actions => Geo::WellKnownText::Grammar::Wkt-Actions).made;
+#}
 
-our sub from-wkb(Buf $buff) is DEPRECATED {
-    Geo::WellKnownBinary::from-wkb($buff);
-}
+#our sub from-wkb(Buf $buff) is DEPRECATED {
+#    Geo::WellKnownBinary::from-wkb($buff);
+#}

@@ -5,19 +5,9 @@ TITLE
 
 Geo::Geometry
 
-`Geo::Geometry` is a group of modules for handling geographic data.
+`Geo::Geometry` is a module containing a series of classes defining objects descibing geographic objects.
 
-The included modules are
-
-  * `Geo::Geometry`
-
-  * `Geo::Geometry::WKB`
-
-  * `Geo::Geometry::WKT`
-
-  * `Geo::Geometry::WKT::Grammar`
-
-These modules are based on chapters 8 and 9 of the Open Geospatial Consortium's *OpenGISⓇ Implemantation Standard for Geographic Information - Simple Feature Access - part 1: Common architecture*. This can be obtained from [https://www.ogc.org/standards/sfa](https://www.ogc.org/standards/sfa).
+The module is based on chapters 8 and 9 of the Open Geospatial Consortium's *OpenGISⓇ Implemantation Standard for Geographic Information - Simple Feature Access - part 1: Common architecture*. This can be obtained from [https://www.ogc.org/standards/sfa](https://www.ogc.org/standards/sfa).
 
 Geo::Geometry
 =============
@@ -52,13 +42,7 @@ The `tobuf` method is used internally; This interface may change without warning
 Subroutines
 -----------
 
-### from-wkt
-
-The `from-wkt` subroutine takes a string as parameter and returns a `Geometry` object if the string contains a WKT representation of a geometry.
-
-### from-wkb
-
-The `from-wkb` subroutine takes a Buf as parameter, and returns a `Geometry` object if the Buf contains a WKΒ representation of a geometry.
+The subroutines `from-wkb` and `from-wkt` previously available in this module are now avialable from `Geo::WellKnownBinary` and `Geo::WellKnownText` respectively.
 
 Enums
 -----
@@ -241,14 +225,4 @@ Just as a `MultiPoint` is a collections of `Point`s, and a `MultiLineString` is 
 ### GeometryCollectionZM
 
 A GeometryCollection is an arbitrary collection of geometry objects. Unlike a PointCollection, a LineStringCollection or a PolygonCollection, the objects do not need to be of the same geometry type.
-
-Geo::Geometry::WKB
-==================
-
-The `Geo::Geometry::WKB` module contains a single function:
-
-from-wkb
---------
-
-`from-wkb` takes a single `Buf` parameter, and returns a single `Geo::Geometry` object corresponding to the wkb specification, or a `Failure` if the contents of the Buff cannot be interpreted as a geometry object.
 

@@ -1,16 +1,9 @@
-
 =begin pod
 =TITLE Geo::Geometry
 
-C<Geo::Geometry> is a group of modules for handling geographic data.
+C<Geo::Geometry> is a module containing a series of classes defining objects descibing geographic objects.
 
-The included modules are
-=item C<Geo::Geometry>
-=item C<Geo::Geometry::WKB>
-=item C<Geo::Geometry::WKT>
-=item C<Geo::Geometry::WKT::Grammar>
-
-These modules are based on chapters 8 and 9 of the Open Geospatial Consortium's
+The module is based on chapters 8 and 9 of the Open Geospatial Consortium's
 I<OpenGISⓇ Implemantation Standard for Geographic Information - Simple Feature Access - part 1: Common architecture>.
 This can be obtained from L<https://www.ogc.org/standards/sfa>.
 
@@ -54,17 +47,7 @@ The C<tobuf> method is used internally; This interface may change without warnin
 
 =head2 Subroutines
 
-=head3 from-wkt
-
-The C<from-wkt> subroutine takes a string as parameter
-and returns a C<Geometry> object if the string contains
-a WKT representation of a geometry.
-
-=head3 from-wkb
-
-The C<from-wkb> subroutine takes a Buf as parameter,
-and returns a C<Geometry> object if the Buf contains
-a WKΒ representation of a geometry.
+The subroutines C<from-wkb> and C<from-wkt> previously available in this module are now avialable from C<Geo::WellKnownBinary> and C<Geo::WellKnownText> respectively.
 
 =head2 Enums
 
@@ -294,13 +277,5 @@ Just as a C<MultiPoint> is a collections of C<Point>s, and a C<MultiLineString> 
 A GeometryCollection is an arbitrary collection of geometry objects.
 Unlike a PointCollection, a LineStringCollection or a PolygonCollection,
 the objects do not need to be of the same geometry type.
-
-=head1 Geo::Geometry::WKB
-
-The C<Geo::Geometry::WKB> module contains a single function:
-
-=head2 from-wkb
-
-C<from-wkb> takes a single C<Buf> parameter, and returns a single C<Geo::Geometry> object corresponding to the wkb specification, or a C<Failure> if the contents of the Buff cannot be interpreted as a geometry object.
 
 =end pod
