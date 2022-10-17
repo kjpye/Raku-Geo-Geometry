@@ -2,6 +2,9 @@ Revision history for Geo::Geometry
 
 {{$NEXT}}
 
+0.1.1  2022-10-17T16:54:31+11:00
+	- Fix endianness
+
 0.1.0  2022-09-01T10:50:01+10:00
         - Complete WKT grammar
         - split WKB and WKT into separate submodules
