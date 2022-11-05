@@ -1,6 +1,7 @@
 Revision history for Geo::Geometry
 
 {{$NEXT}}
+	- Fix error in all multi-geometries wkb function
 
 0.1.2  2022-11-05T13:38:25+11:00
         - Fix format of generated WKB to match spec and Geo::WellKnownBinary

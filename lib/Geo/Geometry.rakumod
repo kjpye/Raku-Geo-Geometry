@@ -670,7 +670,7 @@ class MultiPoint does Geometry {
         my $endian = $byteorder == wkbXDR ?? BigEndian !! LittleEndian;
         $b.write-uint32(1, wkbMultiPoint, $endian);
         $b.write-uint32(5, $!num-points,  $endian);
-        $b ~ [~] @~points.map({.wkb($byteorder)})
+        $b ~ [~] @!points.map({.wkb($byteorder)})
     }
 }
 
@@ -690,7 +690,7 @@ class MultiPointZ does Geometry {
         my $endian = $byteorder == wkbXDR ?? BigEndian !! LittleEndian;
         $b.write-uint32(1, wkbMultiPointZ, $endian);
         $b.write-uint32(5, $!num-points,   $endian);
-        $b ~ [~] @~points.map({.wkb($byteorder)})
+        $b ~ [~] @!points.map({.wkb($byteorder)})
     }
 }
     
@@ -708,7 +708,7 @@ class MultiPointM does Geometry {
         my $endian = $byteorder == wkbXDR ?? BigEndian !! LittleEndian;
         $b.write-uint32(1, wkbMultiPointM, $endian);
         $b.write-uint32(5, $!num-points,   $endian);
-        $b ~ [~] @~points.map({.wkb($byteorder)})
+        $b ~ [~] @!points.map({.wkb($byteorder)})
     }
 }
     
@@ -726,7 +726,7 @@ class MultiPointZM does Geometry {
         my $endian = $byteorder == wkbXDR ?? BigEndian !! LittleEndian;
         $b.write-uint32(1, wkbMultiPointZM, $endian);
         $b.write-uint32(5, $!num-points,    $endian);
-        $b ~ [~] @~points.map({.wkb($byteorder)})
+        $b ~ [~] @!points.map({.wkb($byteorder)})
     }
 }
 
@@ -767,7 +767,7 @@ class MultiLineStringZ does Geometry {
         my $endian = $byteorder == wkbXDR ?? BigEndian !! LittleEndian;
         $b.write-int32(1, wkbMultiLineStringZ, $endian);
         $b.write-int32(5, $!num-linestrings,   $endian);
-        $b ~ [~] @~linestrings.map({.wkb($byteorder)})
+        $b ~ [~] @!linestrings.map({.wkb($byteorder)})
     }
 }
 
@@ -785,7 +785,7 @@ class MultiLineStringM does Geometry {
         my $endian = $byteorder == wkbXDR ?? BigEndian !! LittleEndian;
         $b.write-int32(1, wkbMultiLineStringM, $endian);
         $b.write-int32(5, $!num-linestrings,   $endian);
-        $b ~ [~] @~linestrings.map({.wkb($byteorder)})
+        $b ~ [~] @!linestrings.map({.wkb($byteorder)})
     }
 }
 
@@ -803,7 +803,7 @@ class MultiLineStringZM does Geometry {
         my $endian = $byteorder == wkbXDR ?? BigEndian !! LittleEndian;
         $b.write-int32(1, wkbMultiLineStringZM, $endian);
         $b.write-int32(5, $!num-linestrings,   $endian);
-        $b ~ [~] @~linestrings.map({.wkb($byteorder)})
+        $b ~ [~] @!linestrings.map({.wkb($byteorder)})
     }
 }
 
@@ -821,7 +821,7 @@ class MultiPolygon does Geometry {
         my $endian = $byteorder == wkbXDR ?? BigEndian !! LittleEndian;
         $b.write-int32(1, wkbMultiPolygon, $endian);
         $b.write-int32(5, $!num-polygons,  $endian);
-        $b ~ [~] @~polygons.map({.wkb($byteorder)})
+        $b ~ [~] @!polygons.map({.wkb($byteorder)})
     }
 }
 
@@ -839,7 +839,7 @@ class MultiPolygonZ does Geometry {
         my $endian = $byteorder == wkbXDR ?? BigEndian !! LittleEndian;
         $b.write-int32(1, wkbMultiPolygonZ, $endian);
         $b.write-int32(5, $!num-polygons,  $endian);
-        $b ~ [~] @~polygons.map({.wkb($byteorder)})
+        $b ~ [~] @!polygons.map({.wkb($byteorder)})
     }
 }
 
@@ -857,7 +857,7 @@ class MultiPolygonM does Geometry {
         my $endian = $byteorder == wkbXDR ?? BigEndian !! LittleEndian;
         $b.write-int32(1, wkbMultiPolygonM, $endian);
         $b.write-int32(5, $!num-polygons,  $endian);
-        $b ~ [~] @~polygons.map({.wkb($byteorder)})
+        $b ~ [~] @!polygons.map({.wkb($byteorder)})
     }
 }
 
@@ -875,7 +875,7 @@ class MultiPolygonZM does Geometry {
         my $endian = $byteorder == wkbXDR ?? BigEndian !! LittleEndian;
         $b.write-int32(1, wkbMultiPolygonZM, $endian);
         $b.write-int32(5, $!num-polygons,  $endian);
-        $b ~ [~] @~polygons.map({.wkb($byteorder)})
+        $b ~ [~] @!polygons.map({.wkb($byteorder)})
     }
 }
 
@@ -891,7 +891,7 @@ class GeometryCollection does Geometry {
         my $endian = $byteorder == wkbXDR ?? BigEndian !! LittleEndian;
         $b.write-int32(1, wkbGeometryCollection, $endian);
         $b.write-int32(5, $!num-geometries,  $endian);
-        $b ~ [~] @~geometries.map({.wkb($byteorder)})
+        $b ~ [~] @!geometries.map({.wkb($byteorder)})
     }
 }
 
@@ -907,7 +907,7 @@ class GeometryCollectionZ does Geometry {
         my $endian = $byteorder == wkbXDR ?? BigEndian !! LittleEndian;
         $b.write-int32(1, wkbGeometryCollectionZ, $endian);
         $b.write-int32(5, $!num-geometries,  $endian);
-        $b ~ [~] @~geometries.map({.wkb($byteorder)})
+        $b ~ [~] @!geometries.map({.wkb($byteorder)})
     }
 }
 
@@ -923,7 +923,7 @@ class GeometryCollectionM does Geometry {
         my $endian = $byteorder == wkbXDR ?? BigEndian !! LittleEndian;
         $b.write-int32(1, wkbGeometryCollectionM, $endian);
         $b.write-int32(5, $!num-geometries,  $endian);
-        $b ~ [~] @~geometries.map({.wkb($byteorder)})
+        $b ~ [~] @!geometries.map({.wkb($byteorder)})
     }
 }
 
@@ -939,14 +939,6 @@ class GeometryCollectionZM does Geometry {
         my $endian = $byteorder == wkbXDR ?? BigEndian !! LittleEndian;
         $b.write-int32(1, wkbGeometryCollectionZM, $endian);
         $b.write-int32(5, $!num-geometries,  $endian);
-        $b ~ [~] @~geometries.map({.wkb($byteorder)})
+        $b ~ [~] @!geometries.map({.wkb($byteorder)})
     }
 }
-
-#our sub from-wkt (Str $s) is DEPRECATED {
-#    Geo::WellKnownText::Grammar::WKT.parse($s, actions => Geo::WellKnownText::Grammar::Wkt-Actions).made;
-#}
-
-#our sub from-wkb(Buf $buff) is DEPRECATED {
-#    Geo::WellKnownBinary::from-wkb($buff);
-#}
