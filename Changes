@@ -1,6 +1,8 @@
 Revision history for Geo::Geometry
 
 {{$NEXT}}
+
+0.1.3  2022-11-05T13:44:46+11:00
 	- Fix error in all multi-geometries wkb function
 
 0.1.2  2022-11-05T13:38:25+11:00
