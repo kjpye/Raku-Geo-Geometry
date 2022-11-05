@@ -2,6 +2,9 @@ Revision history for Geo::Geometry
 
 {{$NEXT}}
 
+0.1.2  2022-11-05T13:38:25+11:00
+        - Fix format of generated WKB to match spec and Geo::WellKnownBinary
+
 0.1.1  2022-10-17T16:54:31+11:00
 	- Fix endianness
 
